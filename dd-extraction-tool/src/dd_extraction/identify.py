@@ -53,6 +53,10 @@ class ClassificationError(Exception):
     """The model returned no usable classification for a page."""
 
 
+class ProviderAuthError(Exception):
+    """The model provider rejected the credentials, so every page would fail."""
+
+
 def build_user_content(page: Page) -> List[Dict[str, object]]:
     """The per-request page content, framed as data rather than instructions."""
     header = f"Source document: {page.source_document}, page {page.source_page}."
@@ -125,7 +129,7 @@ def identify_financial_statements(
         for page in pages:
             try:
                 result = classify(page)
-            except (anthropic.AuthenticationError, anthropic.PermissionDeniedError):
+            except (anthropic.AuthenticationError, anthropic.PermissionDeniedError, ProviderAuthError):
                 raise  # a bad key fails every page; stop instead of skipping them all
             except (anthropic.APIError, ClassificationError) as exc:
                 skipped.append(

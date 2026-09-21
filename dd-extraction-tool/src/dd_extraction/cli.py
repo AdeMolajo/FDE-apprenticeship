@@ -10,7 +10,13 @@ from typing import List, Optional
 
 import anthropic
 
-from .identify import DEFAULT_MODEL, identify_financial_statements, make_claude_classifier
+from .identify import (
+    DEFAULT_MODEL,
+    ProviderAuthError,
+    identify_financial_statements,
+    make_claude_classifier,
+)
+from .ollama import DEFAULT_OLLAMA_HOST, DEFAULT_OLLAMA_MODEL, make_ollama_classifier
 
 
 def main(argv: Optional[List[str]] = None) -> int:
@@ -19,27 +25,47 @@ def main(argv: Optional[List[str]] = None) -> int:
     )
     parser.add_argument("dataroom", type=Path, help="data-room folder (read only)")
     parser.add_argument("--out", type=Path, required=True, help="JSON report to write")
-    parser.add_argument("--model", default=DEFAULT_MODEL, help=f"default: {DEFAULT_MODEL}")
+    parser.add_argument(
+        "--provider",
+        choices=["anthropic", "ollama"],
+        default="anthropic",
+        help="model provider (default: anthropic). ollama uses OLLAMA_HOST "
+        f"(default {DEFAULT_OLLAMA_HOST}) and OLLAMA_API_KEY",
+    )
+    parser.add_argument(
+        "--model",
+        help=f"model name (default: {DEFAULT_MODEL} for anthropic, {DEFAULT_OLLAMA_MODEL} for ollama)",
+    )
     args = parser.parse_args(argv)
 
     dataroom = args.dataroom.resolve()
     out = args.out.resolve()
-    # Read and write access stay separate (Gate 3, Topic 5).
     if not dataroom.is_dir():
         parser.error(f"data room folder not found: {dataroom}")
+    # Read and write access stay separate (Gate 3, Topic 5).
     if dataroom in out.parents:
         parser.error("--out must be outside the data room; the data room is read only")
-    if not (os.environ.get("ANTHROPIC_API_KEY") or os.environ.get("ANTHROPIC_AUTH_TOKEN")):
-        parser.error("ANTHROPIC_API_KEY is not set")
+
+    if args.provider == "ollama":
+        model = args.model or DEFAULT_OLLAMA_MODEL
+        host = os.environ.get("OLLAMA_HOST", DEFAULT_OLLAMA_HOST)
+        api_key = os.environ.get("OLLAMA_API_KEY")
+        if not api_key and "ollama.com" in host:
+            parser.error("OLLAMA_API_KEY is not set (needed for Ollama Cloud)")
+        classify = make_ollama_classifier(model=model, host=host, api_key=api_key)
+    else:
+        model = args.model or DEFAULT_MODEL
+        if not (os.environ.get("ANTHROPIC_API_KEY") or os.environ.get("ANTHROPIC_AUTH_TOKEN")):
+            parser.error("ANTHROPIC_API_KEY is not set")
+        classify = make_claude_classifier(model=model)
 
     try:
-        report = identify_financial_statements(
-            dataroom, make_claude_classifier(model=args.model), model=args.model
-        )
-    except (anthropic.AuthenticationError, anthropic.PermissionDeniedError) as exc:
-        print(f"error: the Anthropic API rejected the key ({exc.status_code}). "
-              "Check that ANTHROPIC_API_KEY is set to a valid key.", file=sys.stderr)
+        report = identify_financial_statements(dataroom, classify, model=f"{args.provider}/{model}")
+    except (anthropic.AuthenticationError, anthropic.PermissionDeniedError, ProviderAuthError) as exc:
+        key_var = "OLLAMA_API_KEY" if args.provider == "ollama" else "ANTHROPIC_API_KEY"
+        print(f"error: the {args.provider} API rejected the key ({exc}). Check {key_var}.", file=sys.stderr)
         return 1
+
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(report.model_dump_json(indent=2) + "\n", encoding="utf-8")
 

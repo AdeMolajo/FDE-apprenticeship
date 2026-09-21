@@ -59,6 +59,23 @@ A file is listed if at least one of its pages is a financial statement. Anything
 
 Pages with almost no extractable text (scans) are sent to the model as a single-page PDF instead of as text.
 
+## Using Ollama instead of Claude
+
+`--provider ollama` sends the same one-call-per-page classification to an Ollama model. By default it uses Ollama Cloud (`https://ollama.com`) with `gpt-oss:20b`.
+
+```bash
+read -rs "OLLAMA_API_KEY?Paste your Ollama API key, then press Enter: " && export OLLAMA_API_KEY
+.venv/bin/dd-identify sample-dataroom --provider ollama --out reports/identification.json
+```
+
+For a local Ollama server, set `OLLAMA_HOST=http://localhost:11434`; no key is needed. Pick another model with `--model`.
+
+Differences from the Claude provider:
+
+- **Output is validated, not constrained.** Ollama Cloud ignores the JSON schema in `format`, so the schema is also stated in the prompt and each answer is parsed and validated in code. Pages whose answer does not parse go in `skipped`.
+- **Text only.** Scanned pages with no text layer are not sent; they go in `skipped` with a reason.
+- **Different trust boundary.** Pages are sent to Ollama's servers. That's fine for test data, but real deal documents should only go to a provider the client has approved (Gate 3, Topic 5).
+
 ## Tests
 
 ```bash
