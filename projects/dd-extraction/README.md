@@ -25,6 +25,7 @@ Needs Python 3.9 or later and an Anthropic API key.
 ```bash
 cd projects/dd-extraction
 python3 -m venv .venv
+.venv/bin/pip install --upgrade pip   # the pip bundled with Python 3.9 is too old for editable installs
 .venv/bin/pip install -e ".[dev]"
 export ANTHROPIC_API_KEY=...
 ```
