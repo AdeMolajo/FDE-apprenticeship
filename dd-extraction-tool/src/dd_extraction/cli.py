@@ -7,6 +7,8 @@ import sys
 from pathlib import Path
 from typing import List, Optional
 
+import anthropic
+
 from .identify import DEFAULT_MODEL, identify_financial_statements, make_claude_classifier
 
 
@@ -22,12 +24,19 @@ def main(argv: Optional[List[str]] = None) -> int:
     dataroom = args.dataroom.resolve()
     out = args.out.resolve()
     # Read and write access stay separate (Gate 3, Topic 5).
+    if not dataroom.is_dir():
+        parser.error(f"data room folder not found: {dataroom}")
     if dataroom in out.parents:
         parser.error("--out must be outside the data room; the data room is read only")
 
-    report = identify_financial_statements(
-        dataroom, make_claude_classifier(model=args.model), model=args.model
-    )
+    try:
+        report = identify_financial_statements(
+            dataroom, make_claude_classifier(model=args.model), model=args.model
+        )
+    except (anthropic.AuthenticationError, anthropic.PermissionDeniedError) as exc:
+        print(f"error: the Anthropic API rejected the key ({exc.status_code}). "
+              "Check that ANTHROPIC_API_KEY is set to a valid key.", file=sys.stderr)
+        return 1
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(report.model_dump_json(indent=2) + "\n", encoding="utf-8")
 

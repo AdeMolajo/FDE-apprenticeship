@@ -145,3 +145,26 @@ def test_refused_or_truncated_response_is_an_error(dataroom: Path):
 def test_cli_will_not_write_inside_the_dataroom(dataroom: Path):
     with pytest.raises(SystemExit):
         main([str(dataroom), "--out", str(dataroom / "report.json")])
+
+
+def test_cli_rejects_a_missing_dataroom(tmp_path: Path):
+    with pytest.raises(SystemExit):
+        main([str(tmp_path / "missing"), "--out", str(tmp_path / "report.json")])
+
+
+def test_bad_api_key_stops_the_run(dataroom: Path, tmp_path: Path, monkeypatch, capsys):
+    import anthropic
+    import httpx
+
+    import dd_extraction.cli as cli
+
+    def rejected(page):
+        response = httpx.Response(401, request=httpx.Request("POST", "https://api.anthropic.com"))
+        raise anthropic.AuthenticationError("invalid x-api-key", response=response, body=None)
+
+    monkeypatch.setattr(cli, "make_claude_classifier", lambda model: rejected)
+    out = tmp_path / "report.json"
+
+    assert main([str(dataroom), "--out", str(out)]) == 1
+    assert "ANTHROPIC_API_KEY" in capsys.readouterr().err
+    assert not out.exists()

@@ -125,6 +125,8 @@ def identify_financial_statements(
         for page in pages:
             try:
                 result = classify(page)
+            except (anthropic.AuthenticationError, anthropic.PermissionDeniedError):
+                raise  # a bad key fails every page; stop instead of skipping them all
             except (anthropic.APIError, ClassificationError) as exc:
                 skipped.append(
                     SkippedItem(
