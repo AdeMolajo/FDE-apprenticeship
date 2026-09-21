@@ -3,9 +3,9 @@ requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "dd-extraction"
+name = "dd-extraction-tool"
 version = "0.1.0"
-description = "DD extraction pipeline: financial statement identification (Gate 3, step 1)"
+description = "DD extraction tool, step 1: financial statement identification (Gate 3)"
 requires-python = ">=3.9"
 dependencies = [
     "anthropic>=0.75",
