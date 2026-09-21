@@ -1,5 +1,30 @@
+# Secrets: API keys belong in environment variables or a local .env, never in git
+.env
+.env.*
+!.env.example
+
+# Python
 __pycache__/
+*.py[cod]
 *.egg-info/
+build/
+dist/
+
+# Virtual environments
 .venv/
+venv/
+
+# Test and tool caches
 .pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+
+# Generated output (dd-identify reports)
 reports/
+
+# Editors and OS
+.vscode/
+.idea/
+.DS_Store
