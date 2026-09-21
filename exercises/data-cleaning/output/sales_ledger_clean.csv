@@ -1,0 +1,23 @@
+fiscal_year,invoice_no,customer,invoice_date,amount_gbp,region,status,amount_raw,source_ref
+FY24,INV-2401,Acme Motors Ltd,2024-02-10,11200.0,North,Paid,11200,sales fy24!R2
+FY24,INV-2402,Müller Engineering GmbH,2024-03-10,2950.0,EU,Paid,"2.950,00",sales fy24!R3
+FY24,INV-2403,Northwind Traders,2024-04-05,3100.0,North,Paid,3100,sales fy24!R4
+FY24,INV-2404,Blue Harbour Logistics,2024-06-30,4050.0,Scotland,Outstanding,"£4,050",sales fy24!R5
+FY24,INV-2405,Greenfield Farms,2024-08-07,,Wales,Outstanding,n/a,sales fy24!R7
+FY24,INV-2406,Société Générale UK,2024-11-18,7625.5,London,Paid,7625.5,sales fy24!R8
+FY25,INV-2501,Acme Motors Ltd,2025-01-14,12500.0,North,Paid,12500,Sales FY25!R2
+FY25,INV-2502,Société Générale UK,2025-02-14,1250.0,London,Paid,"1,250.00",Sales FY25!R3
+FY25,INV-2503,Müller Engineering GmbH,2025-03-03,3400.0,EU,Outstanding,"Â£3,400",Sales FY25!R4
+FY25,INV-2504,Caf� Nero Holdings,2025-03-19,870.0,South,Partially paid,870,Sales FY25!R5
+FY25,INV-2505,Northwind Traders,2025-04-03,-500.0,North,Credit note,(500.00),Sales FY25!R6
+FY25,INV-2506,Blue Harbour Logistics,2025-04-22,,Scotland,Disputed,N/A,Sales FY25!R7
+FY25,INV-2507,Acme Motors Ltd,2025-05-02,2100.5,North,Paid,2 100.50,Sales FY25!R8
+FY25,INV-2508,Ørsted Wind Services,2025-05-11,,EU,Outstanding,TBC,Sales FY25!R10
+FY25,INV-2509,Greenfield Farms,2025-06-01,4300.0,Wales,Paid,4300,Sales FY25!R11
+FY25,INV-2510,Greenfield Farms,2025-06-01,4300.0,Wales,Paid,4300,Sales FY25!R12
+FY25,INV-2511,Blue Harbour Logistics,2025-07-08,6780.0,Scotland,Paid,"6,780.00",Sales FY25!R14
+FY25,INV-2512,Zürich Insurance plc,2025-07-08,1200.0,London,Outstanding,1200,Sales FY25!R15
+FY25,INV-2513,Northwind Traders,2025-07-30,,North,,-,Sales FY25!R16
+FY25,INV-2514,Acme Motors Ltd,2025-08-15,15000.0,North,Paid,15000,Sales FY25!R17
+FY25,INV-2515,O'Connor & Sons,2025-09-01,950.0,Northern Ireland,Paid,Â£ 950.00,Sales FY25!R19
+FY25,INV-2516,Smërgåsbord Foods AB,2025-09-12,,EU,Outstanding,True,Sales FY25!R20

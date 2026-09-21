@@ -1,0 +1,20 @@
+﻿Invoice No,Customer Name ,invoice_date,Amount (GBP),Region,Status
+INV-2501,Acme Motors Ltd,2025-01-14,12500.0,North,Paid
+INV-2502,Soci�t� G�n�rale UK,14/02/2025,"1,250.00",London,Paid
+INV-2503,M�ller Engineering GmbH,03-Mar-25,"£3,400",EU,Outstanding
+INV-2504,Caf� Nero Holdings,2025-03-19,870,South,Paid â€“ partial
+INV-2505,Northwind Traders,03/04/2025,(500.00),North,Credit note
+INV-2506,Blue Harbour Logistics,22-Apr-25,N/A,Scotland,Disputed
+INV-2507,Acme Motors Ltd,2025-05-02,2 100.50,North,Paid
+INV-2507,Acme Motors Ltd,2025-05-02,2 100.50,North,Paid
+INV-2508,Ãrsted Wind Services,11/05/2025,TBC,EU,Outstanding
+INV-2509,Greenfield Farms,01-Jun-25,4300,Wales,paid
+INV-2510,Greenfield Farms ,01-Jun-25,4300,Wales,Paid
+Inv #,Client,Date of Invoice,Amount,region,STATUS
+INV-2511,Blue Harbour Logistics,2025-07-08,"6,780.00",scotland,Paid
+INV-2512,ZÃ¼rich Insurance plc,08/07/2025,1200.0,London,Outstanding
+INV-2513,Northwind Traders,30-Jul-25,-,North,
+INV-2514,Acme Motors Ltd,2025-08-15,15000,North,Paid
+INV-2514,Acme Motors Ltd,2025-08-15,15000,North,Paid
+INV-2515,O’Connor & Sons,01/09/2025,Â£ 950.00,NI,Paid
+INV-2516,Sm�rg�sbord Foods AB,12-Sep-25,True,EU,Outstanding

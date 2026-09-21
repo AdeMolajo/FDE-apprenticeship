@@ -28,3 +28,6 @@ reports/
 .vscode/
 .idea/
 .DS_Store
+
+# Office lock files (created while a document is open)
+~$*
