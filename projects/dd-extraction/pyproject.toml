@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "dd-extraction"
+version = "0.1.0"
+description = "DD extraction pipeline: financial statement identification (Gate 3, step 1)"
+requires-python = ">=3.9"
+dependencies = [
+    "anthropic>=0.75",
+    "pydantic>=2.7",
+    "pypdf>=5.0",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "reportlab>=4"]
+
+[project.scripts]
+dd-identify = "dd_extraction.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
