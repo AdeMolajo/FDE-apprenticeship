@@ -162,9 +162,17 @@ def test_bad_api_key_stops_the_run(dataroom: Path, tmp_path: Path, monkeypatch, 
         response = httpx.Response(401, request=httpx.Request("POST", "https://api.anthropic.com"))
         raise anthropic.AuthenticationError("invalid x-api-key", response=response, body=None)
 
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "sk-ant-invalid")
     monkeypatch.setattr(cli, "make_claude_classifier", lambda model: rejected)
     out = tmp_path / "report.json"
 
     assert main([str(dataroom), "--out", str(out)]) == 1
     assert "ANTHROPIC_API_KEY" in capsys.readouterr().err
     assert not out.exists()
+
+
+def test_cli_rejects_a_missing_api_key(dataroom: Path, tmp_path: Path, monkeypatch):
+    monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
+    monkeypatch.delenv("ANTHROPIC_AUTH_TOKEN", raising=False)
+    with pytest.raises(SystemExit):
+        main([str(dataroom), "--out", str(tmp_path / "report.json")])

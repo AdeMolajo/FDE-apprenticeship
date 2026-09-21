@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import os
 import sys
 from pathlib import Path
 from typing import List, Optional
@@ -28,6 +29,8 @@ def main(argv: Optional[List[str]] = None) -> int:
         parser.error(f"data room folder not found: {dataroom}")
     if dataroom in out.parents:
         parser.error("--out must be outside the data room; the data room is read only")
+    if not (os.environ.get("ANTHROPIC_API_KEY") or os.environ.get("ANTHROPIC_AUTH_TOKEN")):
+        parser.error("ANTHROPIC_API_KEY is not set")
 
     try:
         report = identify_financial_statements(
