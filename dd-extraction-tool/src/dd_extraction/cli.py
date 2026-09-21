@@ -45,6 +45,15 @@ def main(argv: Optional[List[str]] = None) -> int:
     # Read and write access stay separate (Gate 3, Topic 5).
     if dataroom in out.parents:
         parser.error("--out must be outside the data room; the data room is read only")
+    # Check the report can be written before paying for any model calls.
+    if out.is_dir():
+        parser.error(f"--out is a folder; give a file path such as {out / 'identification.json'}")
+    try:
+        out.parent.mkdir(parents=True, exist_ok=True)
+    except OSError as exc:
+        parser.error(f"cannot create the folder for --out: {exc}")
+    if not os.access(out.parent, os.W_OK) or (out.exists() and not os.access(out, os.W_OK)):
+        parser.error(f"--out is not writable: {out}")
 
     if args.provider == "ollama":
         model = args.model or DEFAULT_OLLAMA_MODEL
@@ -66,7 +75,6 @@ def main(argv: Optional[List[str]] = None) -> int:
         print(f"error: the {args.provider} API rejected the key ({exc}). Check {key_var}.", file=sys.stderr)
         return 1
 
-    out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(report.model_dump_json(indent=2) + "\n", encoding="utf-8")
 
     print(

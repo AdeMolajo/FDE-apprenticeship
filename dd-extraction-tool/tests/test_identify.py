@@ -176,3 +176,53 @@ def test_cli_rejects_a_missing_api_key(dataroom: Path, tmp_path: Path, monkeypat
     monkeypatch.delenv("ANTHROPIC_AUTH_TOKEN", raising=False)
     with pytest.raises(SystemExit):
         main([str(dataroom), "--out", str(tmp_path / "report.json")])
+
+
+@pytest.fixture
+def counting_classifier(monkeypatch):
+    """Patch the CLI's Claude classifier with one that records every page it sees."""
+    import dd_extraction.cli as cli
+
+    calls = []
+
+    def classify(page):
+        calls.append(page)
+        return NO
+
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "sk-ant-test")
+    monkeypatch.setattr(cli, "make_claude_classifier", lambda model: classify)
+    return calls
+
+
+def test_out_as_a_folder_fails_before_any_model_call(dataroom, tmp_path, counting_classifier):
+    folder = tmp_path / "reports"
+    folder.mkdir()
+    with pytest.raises(SystemExit):
+        main([str(dataroom), "--out", str(folder)])
+    assert counting_classifier == []
+
+
+def test_out_under_a_file_fails_before_any_model_call(dataroom, tmp_path, counting_classifier):
+    blocker = tmp_path / "notes.txt"
+    blocker.write_text("")
+    with pytest.raises(SystemExit):
+        main([str(dataroom), "--out", str(blocker / "report.json")])
+    assert counting_classifier == []
+
+
+def test_unwritable_out_fails_before_any_model_call(dataroom, tmp_path, counting_classifier):
+    locked = tmp_path / "locked"
+    locked.mkdir()
+    locked.chmod(0o500)
+    try:
+        with pytest.raises(SystemExit):
+            main([str(dataroom), "--out", str(locked / "report.json")])
+    finally:
+        locked.chmod(0o700)
+    assert counting_classifier == []
+
+
+def test_valid_out_writes_the_report(dataroom, tmp_path, counting_classifier):
+    out = tmp_path / "new" / "report.json"
+    assert main([str(dataroom), "--out", str(out)]) == 0
+    assert out.exists() and len(counting_classifier) == 4
