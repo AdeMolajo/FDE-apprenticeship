@@ -2,6 +2,8 @@
 
 A working repo for my Forward Deployed Engineer apprenticeship: learning material, hands-on exercises, customer-style projects, and a running log of progress.
 
+This is the updated branch
+
 ## Layout
 
 | Folder | Purpose |
