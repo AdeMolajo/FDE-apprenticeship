@@ -80,8 +80,10 @@ def main(argv: Optional[List[str]] = None) -> int:
     print(
         f"Scanned {report.files_scanned} PDFs, {report.pages_classified} pages. "
         f"{len(report.financial_statement_files)} files contain financial statements; "
-        f"{len(report.skipped)} items skipped."
+        f"{len(report.skipped)} items skipped; {len(report.review)} flagged for review."
     )
+    for flag in report.review:
+        print(f"  REVIEW {flag.source_document} p{flag.source_page}: {flag.reason}")
     for f in report.financial_statement_files:
         print(f"  {f.source_document} (pages {', '.join(str(p.source_page) for p in f.pages)})")
     print(f"Report written to {out}")
