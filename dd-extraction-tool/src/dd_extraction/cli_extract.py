@@ -115,8 +115,10 @@ def main(argv: Optional[List[str]] = None) -> int:
 
     print(
         f"Processed {report.pages_processed} pages, extracted {len(report.figures)} figures; "
-        f"{len(report.skipped)} pages skipped."
+        f"{len(report.skipped)} pages skipped; {len(report.review)} flagged for review."
     )
+    for flag in report.review:
+        print(f"  REVIEW {flag.source_document} p{flag.source_page}: {flag.reason}")
     for figure in report.figures:
         print(
             f"  {figure.source_document} p{figure.source_page}: {figure.metric} = "

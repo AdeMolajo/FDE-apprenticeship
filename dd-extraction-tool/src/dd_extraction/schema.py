@@ -63,6 +63,14 @@ class SkippedItem(BaseModel):
     reason: str
 
 
+class ReviewFlag(BaseModel):
+    """A page that was processed but needs a person to check the result, and why."""
+
+    source_document: str
+    source_page: int
+    reason: str
+
+
 class IdentificationReport(BaseModel):
     dataroom: str
     model: str
@@ -70,6 +78,7 @@ class IdentificationReport(BaseModel):
     pages_classified: int
     financial_statement_files: List[FinancialStatementFile]
     skipped: List[SkippedItem]
+    review: List[ReviewFlag] = Field(default_factory=list)
 
 
 class ExtractedMetric(BaseModel):
@@ -121,3 +130,4 @@ class ExtractionReport(BaseModel):
     pages_processed: int
     figures: List[ExtractedFigure]
     skipped: List[SkippedExtraction]
+    review: List[ReviewFlag] = Field(default_factory=list)

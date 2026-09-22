@@ -19,6 +19,7 @@ import httpx
 from pydantic import ValidationError
 
 from .dataroom import Page
+from .framing import CLASSIFY_AFTER_PAGE, wrap_page_text
 from .identify import SYSTEM_PROMPT, ClassificationError, PageClassifier, ProviderAuthError
 from .schema import PageClassification
 
@@ -59,7 +60,7 @@ def make_ollama_classifier(
             raise ClassificationError("scanned page with no text layer; needs the Claude provider")
         user = (
             f"Source document: {page.source_document}, page {page.source_page}.\n\n"
-            f"<page_content>\n{page.text}\n</page_content>\n\nClassify this page."
+            f"{wrap_page_text(page.text)}\n\n{CLASSIFY_AFTER_PAGE}"
         )
         try:
             response = client.post(
