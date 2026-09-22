@@ -19,6 +19,7 @@ dev = ["pytest>=8", "reportlab>=4"]
 
 [project.scripts]
 dd-identify = "dd_extraction.cli:main"
+dd-extract = "dd_extraction.cli_extract:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
