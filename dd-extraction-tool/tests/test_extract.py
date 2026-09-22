@@ -156,13 +156,16 @@ def test_scanned_page_is_rejected_by_the_ollama_extractor():
     from dd_extraction.dataroom import Page
 
     scanned = Page("scan.pdf", 1, "", b"%PDF-1.4")
-    with pytest.raises(ExtractionError, match="scanned"):
+    with pytest.raises(ExtractionError, match="scanned") as exc:
         extract(scanned)
+    # dd-extract has no Claude provider, so the message must not point to one.
+    assert "Claude" not in str(exc.value) and "OCR" in str(exc.value)
 
 
 def test_system_prompt_lists_target_metrics_and_schema():
-    prompt = build_system_prompt(["revenue", "net_profit"])
+    prompt = build_system_prompt(["revenue", "net_profit"], ["GBP", "SEK"])
     assert "revenue" in prompt and "net_profit" in prompt
+    assert "GBP, SEK" in prompt and "NOT_STATED" in prompt
     assert "untrusted data" in prompt
     assert '"figures"' in prompt  # the JSON schema is embedded, Ollama Cloud doesn't enforce it
 
@@ -265,7 +268,7 @@ def test_cli_valid_run_writes_the_report(dataroom: Path, tmp_path, identificatio
     monkeypatch.setattr(
         cli_extract,
         "make_ollama_extractor",
-        lambda model, host, api_key, target_metrics=None: keyword_extractor,
+        lambda model, host, api_key, target_metrics=None, currencies=None: keyword_extractor,
     )
 
     report_path = tmp_path / "identification.json"
@@ -275,3 +278,84 @@ def test_cli_valid_run_writes_the_report(dataroom: Path, tmp_path, identificatio
     assert extract_main([str(dataroom), "--identification", str(report_path), "--out", str(out)]) == 0
     assert out.exists()
     assert "revenue" in out.read_text()
+
+
+def figure_extractor(currency: str):
+    """Stand-in that reports revenue in the given currency."""
+
+    def extract(page) -> PageExtraction:
+        return PageExtraction(
+            figures=[ExtractedMetric(metric="revenue", value=1250000, currency=currency, confidence="high")]
+        )
+
+    return extract
+
+
+def test_unaccepted_currency_is_skipped_not_relabelled(dataroom: Path, identification):
+    report = extract_figures(dataroom, identification, figure_extractor("SEK"))
+
+    assert report.figures == []
+    [skip] = report.skipped
+    assert (skip.source_document, skip.source_page) == ("01 Financials/FY25 accounts.pdf", 2)
+    assert "SEK" in skip.reason and "--currencies" in skip.reason
+    assert report.currencies == ["GBP", "USD", "EUR"]
+
+
+def test_currencies_option_accepts_an_extra_currency(dataroom: Path, identification):
+    report = extract_figures(dataroom, identification, figure_extractor("SEK"), currencies=["GBP", "SEK"])
+
+    [figure] = report.figures
+    assert figure.currency == "SEK"
+    assert report.currencies == ["GBP", "SEK"]
+
+
+def test_not_stated_currency_is_kept(dataroom: Path, identification):
+    report = extract_figures(dataroom, identification, figure_extractor("NOT_STATED"))
+
+    [figure] = report.figures
+    assert figure.currency == "NOT_STATED"
+
+
+def test_output_schema_does_not_force_a_currency_from_the_list():
+    from dd_extraction.extract import SCHEMA
+
+    currency = SCHEMA["$defs"]["ExtractedMetric"]["properties"]["currency"]
+    assert "enum" not in currency and currency["pattern"] == "^([A-Z]{3}|NOT_STATED)$"
+
+
+def test_invalid_currency_code_in_answer_is_an_error():
+    with pytest.raises(ExtractionError):
+        parse_answer('{"figures": [{"metric": "revenue", "value": 1.0, "currency": "pounds", "confidence": "high"}]}')
+
+
+def test_cli_rejects_a_malformed_currencies_option(dataroom: Path, tmp_path, identification, monkeypatch):
+    monkeypatch.setenv("OLLAMA_API_KEY", "test-key")
+    report_path = tmp_path / "identification.json"
+    report_path.write_text(identification.model_dump_json())
+    with pytest.raises(SystemExit):
+        extract_main(
+            [str(dataroom), "--identification", str(report_path), "--out", str(tmp_path / "f.json"),
+             "--currencies", "GBP,pounds"]
+        )
+
+
+def test_cli_passes_currencies_through(dataroom: Path, tmp_path, identification, monkeypatch):
+    import dd_extraction.cli_extract as cli_extract
+
+    seen = {}
+
+    def fake_factory(model, host, api_key, target_metrics=None, currencies=None):
+        seen["currencies"] = currencies
+        return figure_extractor("SEK")
+
+    monkeypatch.setenv("OLLAMA_API_KEY", "test-key")
+    monkeypatch.setattr(cli_extract, "make_ollama_extractor", fake_factory)
+    report_path = tmp_path / "identification.json"
+    report_path.write_text(identification.model_dump_json())
+    out = tmp_path / "f.json"
+
+    assert extract_main(
+        [str(dataroom), "--identification", str(report_path), "--out", str(out), "--currencies", "gbp, sek"]
+    ) == 0
+    assert seen["currencies"] == ["GBP", "SEK"]
+    assert '"currency": "SEK"' in out.read_text()

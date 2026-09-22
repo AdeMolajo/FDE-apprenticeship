@@ -23,9 +23,12 @@ from pydantic import BaseModel, ConfigDict, Field
 
 Confidence = Literal["high", "medium", "low"]
 
-# ISO currency codes the extraction step will accept (Topic 4: "chosen from a
-# defined list of ISO currency codes"). Extend this list if a new currency is needed.
-Currency = Literal["USD", "GBP", "EUR"]
+# Topic 4: currency is "chosen from a defined list of ISO currency codes". The list
+# is set per run (dd-extract --currencies) and enforced in code, not in the model's
+# output schema: the model reports the currency the page actually states, or
+# NOT_STATED, so it is never forced to relabel an unlisted currency as a listed one.
+NOT_STATED = "NOT_STATED"
+CURRENCY_PATTERN = r"^([A-Z]{3}|NOT_STATED)$"
 
 
 class PageClassification(BaseModel):
@@ -76,7 +79,10 @@ class ExtractedMetric(BaseModel):
 
     metric: str = Field(description="One of the target metrics named in the system prompt.")
     value: float = Field(description="The figure as a plain number, no currency symbols or commas.")
-    currency: Currency
+    currency: str = Field(
+        pattern=CURRENCY_PATTERN,
+        description="ISO 4217 code the page states the figure in, or NOT_STATED.",
+    )
     confidence: Confidence
 
 
@@ -93,7 +99,7 @@ class ExtractedFigure(BaseModel):
 
     metric: str
     value: float
-    currency: Currency
+    currency: str = Field(pattern=CURRENCY_PATTERN)
     confidence: Confidence
     source_document: str = Field(description="File path relative to the data-room root.")
     source_page: int = Field(ge=1, description="1-indexed page number within source_document.")
@@ -111,6 +117,7 @@ class ExtractionReport(BaseModel):
     dataroom: str
     model: str
     target_metrics: List[str]
+    currencies: List[str] = Field(description="ISO codes accepted for this run (plus NOT_STATED).")
     pages_processed: int
     figures: List[ExtractedFigure]
     skipped: List[SkippedExtraction]

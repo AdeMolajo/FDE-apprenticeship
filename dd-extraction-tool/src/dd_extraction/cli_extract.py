@@ -10,11 +10,13 @@ from __future__ import annotations
 
 import argparse
 import os
+import re
 import sys
 from pathlib import Path
 from typing import List, Optional
 
 from .extract import (
+    DEFAULT_CURRENCIES,
     DEFAULT_HOST,
     DEFAULT_MODEL,
     DEFAULT_TARGET_METRICS,
@@ -49,6 +51,11 @@ def main(argv: Optional[List[str]] = None) -> int:
         "--metrics",
         help="comma-separated metrics to extract (default: " + ", ".join(DEFAULT_TARGET_METRICS) + ")",
     )
+    parser.add_argument(
+        "--currencies",
+        help="comma-separated ISO 4217 codes to accept (default: " + ", ".join(DEFAULT_CURRENCIES) + "). "
+        "Figures in any other currency are skipped with a reason, never relabelled",
+    )
     args = parser.parse_args(argv)
 
     dataroom = args.dataroom.resolve()
@@ -81,10 +88,25 @@ def main(argv: Optional[List[str]] = None) -> int:
 
     model = args.model or DEFAULT_MODEL
     metrics = [m.strip() for m in args.metrics.split(",") if m.strip()] if args.metrics else None
-    extract = make_ollama_extractor(model=model, host=host, api_key=api_key, target_metrics=metrics)
+    currencies = None
+    if args.currencies:
+        currencies = [c.strip().upper() for c in args.currencies.split(",") if c.strip()]
+        invalid = [c for c in currencies if not re.fullmatch(r"[A-Z]{3}", c)]
+        if invalid or not currencies:
+            parser.error(f"--currencies needs three-letter ISO codes such as GBP,USD; got {', '.join(invalid) or 'none'}")
+    extract = make_ollama_extractor(
+        model=model, host=host, api_key=api_key, target_metrics=metrics, currencies=currencies
+    )
 
     try:
-        report = extract_figures(dataroom, identification, extract, model=f"ollama/{model}", target_metrics=metrics)
+        report = extract_figures(
+            dataroom,
+            identification,
+            extract,
+            model=f"ollama/{model}",
+            target_metrics=metrics,
+            currencies=currencies,
+        )
     except ProviderAuthError as exc:
         print(f"error: Ollama rejected the key ({exc}). Check OLLAMA_API_KEY.", file=sys.stderr)
         return 1

@@ -26,7 +26,7 @@ Step 2 only looks at the pages step 1 already flagged — it does not re-scan th
 | Topic 1 table, "Extract specific figures ... Single LLM call, one prompt, one answer" | `extract.make_ollama_extractor`: one Ollama chat call per page, returning a `PageExtraction` |
 | Topic 3: fixed target metrics in the system prompt | `extract.DEFAULT_TARGET_METRICS` and `extract.build_system_prompt`; override with `--metrics` |
 | Topic 3: "which instance of a figure to extract ... left to model judgment" | The prompt tells the model to pick the current-period figure over a comparative or a component, when a metric appears more than once on a page |
-| Topic 4 schema: `metric`, `value`, `currency`, `confidence`, `source_document`, `source_page` | `schema.ExtractedFigure`. As with step 1, `source_document`/`source_page` are set by code from the identification report, never by the model |
+| Topic 4 schema: `metric`, `value`, `currency`, `confidence`, `source_document`, `source_page` | `schema.ExtractedFigure`. As with step 1, `source_document`/`source_page` are set by code from the identification report, never by the model. `currency` must be on the accepted list (`--currencies`), checked in code |
 | Topic 5: untrusted content, read-only data room, scoped output | Same `<page_content>` framing and the same read/write separation check in the CLI as step 1 |
 | Topic 6: small, fast model | `gpt-oss:20b` via Ollama, the same default as step 1's `--provider ollama` option |
 
@@ -92,6 +92,7 @@ Example report:
   "dataroom": "/path/to/dataroom",
   "model": "ollama/gpt-oss:20b",
   "target_metrics": ["revenue", "net_profit", "total_assets", "total_liabilities", "net_assets", "cash_and_equivalents"],
+  "currencies": ["GBP", "USD", "EUR"],
   "pages_processed": 2,
   "figures": [
     { "metric": "revenue", "value": 4820500.0, "currency": "GBP", "confidence": "high", "source_document": "01 Financial/FY25 Audited Accounts.pdf", "source_page": 2 },
@@ -101,7 +102,9 @@ Example report:
 }
 ```
 
-Only metrics actually stated on a page are reported; the model is told not to guess a figure that isn't there. Use `--metrics` to extract a different set, e.g. `--metrics revenue,net_profit`. Use `--host http://localhost:11434` for a local Ollama server instead of Ollama Cloud (no key needed). A scanned page with no text layer is skipped with a reason ("needs the Claude provider"), since Ollama here is text-only — same limitation as step 1's Ollama option.
+Only metrics actually stated on a page are reported; the model is told not to guess a figure that isn't there. Use `--metrics` to extract a different set, e.g. `--metrics revenue,net_profit`. Use `--host http://localhost:11434` for a local Ollama server instead of Ollama Cloud (no key needed). A scanned page with no text layer is skipped with a reason, because Ollama reads text only; run OCR on the page first.
+
+**Currencies.** `--currencies` sets the ISO 4217 codes to accept (default `GBP,USD,EUR`), for example `--currencies GBP,EUR,SEK`. The model reports the currency the page actually states, or `NOT_STATED` if the page shows none; it is never forced to pick from the list. A figure in a currency that isn't accepted goes in `skipped` with a reason instead of being relabelled, so add the currency and rerun to include it. The accepted list is recorded in the report as `currencies`.
 
 ## Using Ollama instead of Claude
 

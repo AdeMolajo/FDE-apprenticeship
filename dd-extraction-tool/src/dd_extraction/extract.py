@@ -44,6 +44,7 @@ from .dataroom import Page, load_pages
 from .identify import ProviderAuthError
 from .ollama import DEFAULT_OLLAMA_HOST, DEFAULT_OLLAMA_MODEL
 from .schema import (
+    NOT_STATED,
     ExtractedFigure,
     ExtractionReport,
     IdentificationReport,
@@ -66,12 +67,17 @@ DEFAULT_TARGET_METRICS = [
     "cash_and_equivalents",
 ]
 
+# ISO 4217 codes accepted by default (Topic 4: "a defined list of ISO currency
+# codes"). Override with --currencies on the CLI.
+DEFAULT_CURRENCIES = ["GBP", "USD", "EUR"]
+
 SCHEMA = PageExtraction.model_json_schema()
 
 
-def build_system_prompt(target_metrics: Iterable[str]) -> str:
+def build_system_prompt(target_metrics: Iterable[str], currencies: Iterable[str]) -> str:
     """Fixed extraction criteria (Topic 3: system prompt): what to look for and how."""
     metrics_list = "\n".join(f"- {metric}" for metric in target_metrics)
+    currency_list = ", ".join(currencies)
     return f"""\
 You extract specific figures from a single page of a financial statement in an M&A \
 due-diligence data room. Extract ONLY the following metrics, and only if this page \
@@ -86,6 +92,11 @@ confident you are in the reading. If a metric appears more than once on the page
 into a total), use your judgment to report the figure that best matches the \
 metric's definition for the current reporting period, not a comparative or a \
 component of it.
+
+Report the currency as the ISO 4217 code the page actually states. The expected \
+currencies are: {currency_list}. If the page states a different currency, report \
+that currency's real code anyway; never substitute one from the expected list. If \
+the page does not state a currency, report {NOT_STATED}.
 
 If a listed metric does not appear on this page, do not report it, and do not \
 guess or estimate a value for it.
@@ -128,15 +139,20 @@ def make_ollama_extractor(
     api_key: Optional[str] = None,
     client: Optional[httpx.Client] = None,
     target_metrics: Optional[List[str]] = None,
+    currencies: Optional[List[str]] = None,
 ) -> PageExtractor:
     """Return an extractor that makes one Ollama chat call per page."""
-    system_prompt = build_system_prompt(target_metrics or DEFAULT_TARGET_METRICS)
+    system_prompt = build_system_prompt(
+        target_metrics or DEFAULT_TARGET_METRICS, currencies or DEFAULT_CURRENCIES
+    )
     headers = {"Authorization": f"Bearer {api_key}"} if api_key else {}
     client = client or httpx.Client(base_url=host, headers=headers, timeout=120)
 
     def extract(page: Page) -> PageExtraction:
         if page.pdf_bytes is not None:
-            raise ExtractionError("scanned page with no text layer; needs the Claude provider")
+            raise ExtractionError(
+                "scanned page with no text layer; Ollama reads text only, so run OCR on this page first"
+            )
         try:
             response = client.post(
                 "/api/chat",
@@ -167,6 +183,7 @@ def extract_figures(
     extract: PageExtractor,
     model: str = DEFAULT_MODEL,
     target_metrics: Optional[List[str]] = None,
+    currencies: Optional[List[str]] = None,
 ) -> ExtractionReport:
     """Run the extraction call on every page step 1 flagged as a financial statement."""
     root = Path(dataroom).resolve()
@@ -174,6 +191,7 @@ def extract_figures(
         raise NotADirectoryError(f"data room not found: {root}")
 
     metrics = list(target_metrics or DEFAULT_TARGET_METRICS)
+    accepted = list(currencies or DEFAULT_CURRENCIES)
     figures: List[ExtractedFigure] = []
     skipped: List[SkippedExtraction] = []
     pages_processed = 0
@@ -219,6 +237,19 @@ def extract_figures(
                 continue
             pages_processed += 1
             for answer in result.figures:
+                if answer.currency != NOT_STATED and answer.currency not in accepted:
+                    skipped.append(
+                        SkippedExtraction(
+                            source_document=file.source_document,
+                            source_page=identified.source_page,
+                            reason=(
+                                f"{answer.metric} is stated in {answer.currency}, which is not in "
+                                f"the accepted currencies ({', '.join(accepted)}); figure not "
+                                "recorded. Add it with --currencies to accept it."
+                            ),
+                        )
+                    )
+                    continue
                 figures.append(
                     ExtractedFigure(
                         metric=answer.metric,
@@ -234,6 +265,7 @@ def extract_figures(
         dataroom=str(root),
         model=model,
         target_metrics=metrics,
+        currencies=accepted,
         pages_processed=pages_processed,
         figures=figures,
         skipped=skipped,
