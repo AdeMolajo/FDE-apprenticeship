@@ -2,7 +2,7 @@
 
 The due-diligence extraction tool for Calder Bennett Partners, designed in the Gate 3 worksheet.
 
-**Built so far: step 1, financial statement identification.** The tool walks a data room, makes one LLM call per PDF page to decide whether the page is a financial statement, and writes a JSON report of the files that contain one. The later steps in the spec (figure extraction, anomaly checks, human review) are not built yet.
+**Built so far: step 1 (financial statement identification) and step 2 (figure extraction).** The tool walks a data room, makes one LLM call per PDF page to decide whether the page is a financial statement, then makes one Ollama call per identified page to pull a fixed set of target figures off it. The later steps in the spec (anomaly checks against a rubric, and the human risk-weighting gate) are separate steps and are not built yet.
 
 ## How step 1 follows the spec
 
@@ -14,6 +14,23 @@ The due-diligence extraction tool for Calder Bennett Partners, designed in the G
 | Topic 4: `confidence`, `source_document`, `source_page` | `schema.IdentifiedPage`. The source fields are set by code from the file walk, never by the model |
 | Topic 5: content is untrusted data; read-only data room; scoped output | Page text is wrapped in `<page_content>` and the prompt forbids following instructions in it. The model has no tools. The data room is only read, and the CLI refuses to write inside it |
 | Topic 6: small, fast model | `claude-haiku-4-5` by default |
+
+## How step 2 (figure extraction) follows the spec
+
+Step 2 only looks at the pages step 1 already flagged — it does not re-scan the whole data room.
+
+**Revision history:** v1 used one Claude call per page. v2 switched to Ollama and batched every identified page of a document into one call, to cut the number of model calls — but that meant the model had to self-report which page each figure came from, since code alone couldn't tell pages apart once several were in the same prompt. v3 (current) reverted the batching back to one call per page, specifically to restore page-level traceability being entirely code-derived, while keeping Ollama as the provider from v2.
+
+| Gate 3 | Implementation |
+| --- | --- |
+| Topic 1 table, "Extract specific figures ... Single LLM call, one prompt, one answer" | `extract.make_ollama_extractor`: one Ollama chat call per page, returning a `PageExtraction` |
+| Topic 3: fixed target metrics in the system prompt | `extract.DEFAULT_TARGET_METRICS` and `extract.build_system_prompt`; override with `--metrics` |
+| Topic 3: "which instance of a figure to extract ... left to model judgment" | The prompt tells the model to pick the current-period figure over a comparative or a component, when a metric appears more than once on a page |
+| Topic 4 schema: `metric`, `value`, `currency`, `confidence`, `source_document`, `source_page` | `schema.ExtractedFigure`. As with step 1, `source_document`/`source_page` are set by code from the identification report, never by the model |
+| Topic 5: untrusted content, read-only data room, scoped output | Same `<page_content>` framing and the same read/write separation check in the CLI as step 1 |
+| Topic 6: small, fast model | `gpt-oss:20b` via Ollama, the same default as step 1's `--provider ollama` option |
+
+**Scope note:** only the extraction call itself was built here, deliberately kept to the one row of the Topic 1 table it corresponds to. Anomaly flagging (deterministic code, per Topic 1) and the human risk-weighting gate are separate rows and separate build steps, not touched in this change.
 
 ## Setup
 
@@ -58,6 +75,33 @@ Example report:
 A file is listed if at least one of its pages is a financial statement. Anything that could not be classified goes in `skipped` with a reason: non-PDF files, unreadable PDFs, and pages where the call failed.
 
 Pages with almost no extractable text (scans) are sent to the model as a single-page PDF instead of as text.
+
+## Run step 2: extract figures
+
+Step 2 uses Ollama (Ollama Cloud by default, needs `OLLAMA_API_KEY`; or a local Ollama server, no key needed):
+
+```bash
+read -rs "OLLAMA_API_KEY?Paste your Ollama API key, then press Enter: " && export OLLAMA_API_KEY
+.venv/bin/dd-extract "/path/to/dataroom" --identification reports/identification.json --out reports/extraction.json
+```
+
+Example report:
+
+```json
+{
+  "dataroom": "/path/to/dataroom",
+  "model": "ollama/gpt-oss:20b",
+  "target_metrics": ["revenue", "net_profit", "total_assets", "total_liabilities", "net_assets", "cash_and_equivalents"],
+  "pages_processed": 2,
+  "figures": [
+    { "metric": "revenue", "value": 4820500.0, "currency": "GBP", "confidence": "high", "source_document": "01 Financial/FY25 Audited Accounts.pdf", "source_page": 2 },
+    { "metric": "total_assets", "value": 6340000.0, "currency": "GBP", "confidence": "high", "source_document": "01 Financial/FY25 Audited Accounts.pdf", "source_page": 3 }
+  ],
+  "skipped": []
+}
+```
+
+Only metrics actually stated on a page are reported; the model is told not to guess a figure that isn't there. Use `--metrics` to extract a different set, e.g. `--metrics revenue,net_profit`. Use `--host http://localhost:11434` for a local Ollama server instead of Ollama Cloud (no key needed). A scanned page with no text layer is skipped with a reason ("needs the Claude provider"), since Ollama here is text-only — same limitation as step 1's Ollama option.
 
 ## Using Ollama instead of Claude
 
