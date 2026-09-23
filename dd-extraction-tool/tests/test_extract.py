@@ -268,7 +268,7 @@ def test_cli_valid_run_writes_the_report(dataroom: Path, tmp_path, identificatio
     monkeypatch.setattr(
         cli_extract,
         "make_ollama_extractor",
-        lambda model, host, api_key, target_metrics=None, currencies=None: keyword_extractor,
+        lambda model, host, api_key, target_metrics=None, currencies=None, stats=None: keyword_extractor,
     )
 
     report_path = tmp_path / "identification.json"
@@ -344,7 +344,7 @@ def test_cli_passes_currencies_through(dataroom: Path, tmp_path, identification,
 
     seen = {}
 
-    def fake_factory(model, host, api_key, target_metrics=None, currencies=None):
+    def fake_factory(model, host, api_key, target_metrics=None, currencies=None, stats=None):
         seen["currencies"] = currencies
         return figure_extractor("SEK")
 

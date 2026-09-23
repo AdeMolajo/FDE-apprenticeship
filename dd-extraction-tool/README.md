@@ -124,6 +124,37 @@ Differences from the Claude provider:
 - **Rate limits and transient errors are retried.** A 429, a 5xx or a dropped connection is retried up to 3 times with exponential backoff (about 2s, 4s then 8s, or the provider's `Retry-After` if it sends one), and each retry is announced on stderr. A page is only skipped once the retries are exhausted. A rejected key still stops the run immediately, and a 400 is never retried.
 - **Different trust boundary.** Pages are sent to Ollama's servers. That's fine for test data, but real deal documents should only go to a provider the client has approved (Gate 3, Topic 5).
 
+## Run log
+
+Every run of either command appends one JSON object to a run log, by default `runs.jsonl` next to the report (`--log` sets another path). Each record holds the input, the output and its counts, a pass/fail check of the output's shape, start and finish timestamps, duration, model calls, retries, failed calls, token counts and cost.
+
+Read it back as a table:
+
+```bash
+.venv/bin/python -m dd_extraction.runlog reports/runs.jsonl
+```
+
+```
+started (UTC)       command     status  shape    secs  calls   tokens      cost  output
+---------------------------------------------------------------------------------------
+2026-09-23 11:21:36 dd-identify ok      pass     24.3     11     7992    0.0012  log-demo-identification.json
+2026-09-23 11:22:02 dd-extract  ok      pass     21.9      5     6767    0.0012  log-demo-extraction.json
+---------------------------------------------------------------------------------------
+2 runs · 16 model calls · 14,759 tokens · 0 retries · 0 failed calls · cost 0.0024
+```
+
+**Shape check.** `pass` means the report validated against its schema and the invariants the schema alone can't express: every figure traceable to a document and a page, every metric one that was requested, every currency one that was accepted, counts consistent, and every skipped item carrying a reason. Any failure is listed in the record under `shape.problems`.
+
+**Cost.** Token counts always come from the provider's own response, so they are measured, not estimated. A money figure appears only when prices are configured, via a JSON file named by `DD_PRICING`:
+
+```json
+{"ollama/gpt-oss:20b": {"input_per_mtok": 0.10, "output_per_mtok": 0.40, "currency": "USD"}}
+```
+
+Those numbers are an example, not Ollama's published rates: put in the prices you are actually charged. Without the file, `cost.amount` is `null` with a reason, rather than a made-up number.
+
+**Failures are logged too.** A rejected key, an unwritten report or an unexpected crash still writes a record, with `status: "error"` and the error message, so the log is a complete history of attempts rather than only of successes.
+
 ## Tests
 
 ```bash
