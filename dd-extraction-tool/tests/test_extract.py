@@ -298,7 +298,7 @@ def test_unaccepted_currency_is_skipped_not_relabelled(dataroom: Path, identific
     [skip] = report.skipped
     assert (skip.source_document, skip.source_page) == ("01 Financials/FY25 accounts.pdf", 2)
     assert "SEK" in skip.reason and "--currencies" in skip.reason
-    assert report.currencies == ["GBP", "USD", "EUR"]
+    assert report.currencies == ["GBP", "USD", "EUR", "MXN"]
 
 
 def test_currencies_option_accepts_an_extra_currency(dataroom: Path, identification):
@@ -359,3 +359,11 @@ def test_cli_passes_currencies_through(dataroom: Path, tmp_path, identification,
     ) == 0
     assert seen["currencies"] == ["GBP", "SEK"]
     assert '"currency": "SEK"' in out.read_text()
+
+
+def test_mexican_pesos_are_accepted_by_default(dataroom: Path, identification):
+    report = extract_figures(dataroom, identification, figure_extractor("MXN"))
+
+    [figure] = report.figures
+    assert figure.currency == "MXN" and report.skipped == []
+    assert "MXN" in report.currencies

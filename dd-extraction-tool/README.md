@@ -92,7 +92,7 @@ Example report:
   "dataroom": "/path/to/dataroom",
   "model": "ollama/gpt-oss:20b",
   "target_metrics": ["revenue", "net_profit", "total_assets", "total_liabilities", "net_assets", "cash_and_equivalents"],
-  "currencies": ["GBP", "USD", "EUR"],
+  "currencies": ["GBP", "USD", "EUR", "MXN"],
   "pages_processed": 2,
   "figures": [
     { "metric": "revenue", "value": 4820500.0, "currency": "GBP", "confidence": "high", "source_document": "01 Financial/FY25 Audited Accounts.pdf", "source_page": 2 },
@@ -104,7 +104,7 @@ Example report:
 
 Only metrics actually stated on a page are reported; the model is told not to guess a figure that isn't there. Use `--metrics` to extract a different set, e.g. `--metrics revenue,net_profit`. Use `--host http://localhost:11434` for a local Ollama server instead of Ollama Cloud (no key needed). A scanned page with no text layer is skipped with a reason, because Ollama reads text only; run OCR on the page first.
 
-**Currencies.** `--currencies` sets the ISO 4217 codes to accept (default `GBP,USD,EUR`), for example `--currencies GBP,EUR,SEK`. The model reports the currency the page actually states, or `NOT_STATED` if the page shows none; it is never forced to pick from the list. A figure in a currency that isn't accepted goes in `skipped` with a reason instead of being relabelled, so add the currency and rerun to include it. The accepted list is recorded in the report as `currencies`.
+**Currencies.** `--currencies` sets the ISO 4217 codes to accept (default `GBP,USD,EUR,MXN`), for example `--currencies GBP,EUR,SEK`. The model reports the currency the page actually states, or `NOT_STATED` if the page shows none; it is never forced to pick from the list. A figure in a currency that isn't accepted goes in `skipped` with a reason instead of being relabelled, so add the currency and rerun to include it. The accepted list is recorded in the report as `currencies`.
 
 ## Using Ollama instead of Claude
 

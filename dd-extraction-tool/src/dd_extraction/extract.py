@@ -73,7 +73,7 @@ DEFAULT_TARGET_METRICS = [
 
 # ISO 4217 codes accepted by default (Topic 4: "a defined list of ISO currency
 # codes"). Override with --currencies on the CLI.
-DEFAULT_CURRENCIES = ["GBP", "USD", "EUR"]
+DEFAULT_CURRENCIES = ["GBP", "USD", "EUR", "MXN"]
 
 SCHEMA = PageExtraction.model_json_schema()
 
