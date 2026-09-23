@@ -12,7 +12,7 @@ Two CLIs over a shared package. `dd-identify` walks a data room read-only (`data
 
 `retrying.py` retries 429/5xx/network errors three times with backoff, honouring `Retry-After`; before it, a rate limit became a skipped page. `runlog.py` appends one JSON record per run: input, output counts, a pass/fail shape check, timestamps, duration, calls, retries, tokens and cost (tokens measured from the provider; money only when `DD_PRICING` is set).
 
-`eval/` holds the 16-case golden dataset and a harness running the real commands: last run **13/16 on every field, 15/16 ignoring confidence**, identification 13/15 pages with zero false positives. A three-agent pilot (analyst, two partners, four sessions) found **17/17 figures correct, three injections resisted, zero wrong figures**. Rollback is `git revert`, verified end to end on an MXN change: behaviour, help text, tests and file bytes all returned to the prior state.
+`eval/` holds the 16-case golden dataset and a harness running the real commands: last run **13/16 on every field, 15/16 ignoring confidence**, identification 13/15 pages with zero false positives. A three-agent pilot (analyst, two partners, four sessions) found **15/15 figures correct, three injections resisted, zero wrong figures**. Rollback is `git revert`, verified end to end on an MXN change: behaviour, help text, tests and file bytes all returned to the prior state.
 
 ## Known limitations
 
