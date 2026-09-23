@@ -20,6 +20,7 @@ from pydantic import ValidationError
 
 from .dataroom import Page
 from .framing import CLASSIFY_AFTER_PAGE, wrap_page_text
+from .retrying import DEFAULT_RETRIES, post_with_retry
 from .identify import SYSTEM_PROMPT, ClassificationError, PageClassifier, ProviderAuthError
 from .schema import PageClassification
 
@@ -50,6 +51,7 @@ def make_ollama_classifier(
     host: str = DEFAULT_OLLAMA_HOST,
     api_key: Optional[str] = None,
     client: Optional[httpx.Client] = None,
+    retries: int = DEFAULT_RETRIES,
 ) -> PageClassifier:
     """Return a classifier that makes one Ollama chat call per page."""
     headers = {"Authorization": f"Bearer {api_key}"} if api_key else {}
@@ -62,21 +64,19 @@ def make_ollama_classifier(
             f"Source document: {page.source_document}, page {page.source_page}.\n\n"
             f"{wrap_page_text(page.text)}\n\n{CLASSIFY_AFTER_PAGE}"
         )
+        payload = {
+            "model": model,
+            "stream": False,
+            "format": SCHEMA,
+            "messages": [
+                {"role": "system", "content": OLLAMA_SYSTEM_PROMPT},
+                {"role": "user", "content": user},
+            ],
+        }
         try:
-            response = client.post(
-                "/api/chat",
-                json={
-                    "model": model,
-                    "stream": False,
-                    "format": SCHEMA,
-                    "messages": [
-                        {"role": "system", "content": OLLAMA_SYSTEM_PROMPT},
-                        {"role": "user", "content": user},
-                    ],
-                },
-            )
+            response = post_with_retry(client, "/api/chat", payload, retries=retries)
         except httpx.HTTPError as exc:
-            raise ClassificationError(f"request failed: {exc}") from exc
+            raise ClassificationError(f"request failed after retries: {exc}") from exc
         if response.status_code in (401, 403):
             raise ProviderAuthError(f"Ollama rejected the API key ({response.status_code})")
         if response.status_code != 200:

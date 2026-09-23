@@ -121,6 +121,7 @@ Differences from the Claude provider:
 
 - **Output is validated, not constrained.** Ollama Cloud ignores the JSON schema in `format`, so the schema is also stated in the prompt and each answer is parsed and validated in code. Pages whose answer does not parse go in `skipped`.
 - **Text only.** Scanned pages with no text layer are not sent; they go in `skipped` with a reason.
+- **Rate limits and transient errors are retried.** A 429, a 5xx or a dropped connection is retried up to 3 times with exponential backoff (about 2s, 4s then 8s, or the provider's `Retry-After` if it sends one), and each retry is announced on stderr. A page is only skipped once the retries are exhausted. A rejected key still stops the run immediately, and a 400 is never retried.
 - **Different trust boundary.** Pages are sent to Ollama's servers. That's fine for test data, but real deal documents should only go to a provider the client has approved (Gate 3, Topic 5).
 
 ## Tests
