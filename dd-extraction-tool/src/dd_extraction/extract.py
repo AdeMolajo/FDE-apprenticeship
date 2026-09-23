@@ -43,6 +43,7 @@ from pypdf.errors import PdfReadError
 from .dataroom import Page, load_pages
 from .framing import EXTRACT_AFTER_PAGE, INJECTION_REVIEW_REASON, contains_frame_tag, wrap_page_text
 from .identify import ProviderAuthError
+from .retrying import DEFAULT_RETRIES, post_with_retry
 from .ollama import DEFAULT_OLLAMA_HOST, DEFAULT_OLLAMA_MODEL
 from .schema import (
     NOT_STATED,
@@ -145,6 +146,7 @@ def make_ollama_extractor(
     client: Optional[httpx.Client] = None,
     target_metrics: Optional[List[str]] = None,
     currencies: Optional[List[str]] = None,
+    retries: int = DEFAULT_RETRIES,
 ) -> PageExtractor:
     """Return an extractor that makes one Ollama chat call per page."""
     system_prompt = build_system_prompt(
@@ -158,21 +160,19 @@ def make_ollama_extractor(
             raise ExtractionError(
                 "scanned page with no text layer; Ollama reads text only, so run OCR on this page first"
             )
+        payload = {
+            "model": model,
+            "stream": False,
+            "format": SCHEMA,
+            "messages": [
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": build_user_text(page)},
+            ],
+        }
         try:
-            response = client.post(
-                "/api/chat",
-                json={
-                    "model": model,
-                    "stream": False,
-                    "format": SCHEMA,
-                    "messages": [
-                        {"role": "system", "content": system_prompt},
-                        {"role": "user", "content": build_user_text(page)},
-                    ],
-                },
-            )
+            response = post_with_retry(client, "/api/chat", payload, retries=retries)
         except httpx.HTTPError as exc:
-            raise ExtractionError(f"request failed: {exc}") from exc
+            raise ExtractionError(f"request failed after retries: {exc}") from exc
         if response.status_code in (401, 403):
             raise ProviderAuthError(f"Ollama rejected the API key ({response.status_code})")
         if response.status_code != 200:
