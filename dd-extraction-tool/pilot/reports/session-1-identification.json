@@ -1,0 +1,51 @@
+{
+  "dataroom": "/Users/ademolajo/Documents/Claude/Projects/FDE-apprenticeship/dd-extraction-tool/pilot/dataroom-session-1",
+  "model": "ollama/gpt-oss:20b",
+  "files_scanned": 6,
+  "pages_classified": 11,
+  "financial_statement_files": [
+    {
+      "source_document": "01 Financial/FY2025 Audited Accounts.pdf",
+      "pages": [
+        {
+          "source_document": "01 Financial/FY2025 Audited Accounts.pdf",
+          "source_page": 2,
+          "confidence": "high"
+        },
+        {
+          "source_document": "01 Financial/FY2025 Audited Accounts.pdf",
+          "source_page": 3,
+          "confidence": "high"
+        },
+        {
+          "source_document": "01 Financial/FY2025 Audited Accounts.pdf",
+          "source_page": 4,
+          "confidence": "high"
+        }
+      ]
+    },
+    {
+      "source_document": "01 Financial/Management Accounts H1 2026.pdf",
+      "pages": [
+        {
+          "source_document": "01 Financial/Management Accounts H1 2026.pdf",
+          "source_page": 1,
+          "confidence": "high"
+        },
+        {
+          "source_document": "01 Financial/Management Accounts H1 2026.pdf",
+          "source_page": 2,
+          "confidence": "high"
+        }
+      ]
+    }
+  ],
+  "skipped": [
+    {
+      "source_document": "03 Commercial/Customer list.csv",
+      "source_page": null,
+      "reason": "not a PDF"
+    }
+  ],
+  "review": []
+}

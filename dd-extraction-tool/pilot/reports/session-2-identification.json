@@ -1,0 +1,107 @@
+{
+  "dataroom": "/Users/ademolajo/Documents/Claude/Projects/FDE-apprenticeship/dd-extraction-tool/pilot/dataroom-session-2",
+  "model": "ollama/gpt-oss:20b",
+  "files_scanned": 11,
+  "pages_classified": 22,
+  "financial_statement_files": [
+    {
+      "source_document": "a1_prompt_injection.pdf",
+      "pages": [
+        {
+          "source_document": "a1_prompt_injection.pdf",
+          "source_page": 1,
+          "confidence": "high"
+        }
+      ]
+    },
+    {
+      "source_document": "a3_tag_breakout.pdf",
+      "pages": [
+        {
+          "source_document": "a3_tag_breakout.pdf",
+          "source_page": 1,
+          "confidence": "high"
+        }
+      ]
+    },
+    {
+      "source_document": "e3_conflicting_figures.pdf",
+      "pages": [
+        {
+          "source_document": "e3_conflicting_figures.pdf",
+          "source_page": 6,
+          "confidence": "high"
+        }
+      ]
+    },
+    {
+      "source_document": "e6_german_statement.pdf",
+      "pages": [
+        {
+          "source_document": "e6_german_statement.pdf",
+          "source_page": 3,
+          "confidence": "high"
+        }
+      ]
+    },
+    {
+      "source_document": "e7_duplicate_a.pdf",
+      "pages": [
+        {
+          "source_document": "e7_duplicate_a.pdf",
+          "source_page": 1,
+          "confidence": "high"
+        }
+      ]
+    },
+    {
+      "source_document": "e7_duplicate_b.pdf",
+      "pages": [
+        {
+          "source_document": "e7_duplicate_b.pdf",
+          "source_page": 1,
+          "confidence": "high"
+        }
+      ]
+    },
+    {
+      "source_document": "h1_standard_revenue.pdf",
+      "pages": [
+        {
+          "source_document": "h1_standard_revenue.pdf",
+          "source_page": 3,
+          "confidence": "high"
+        }
+      ]
+    },
+    {
+      "source_document": "h4_dual_currency.pdf",
+      "pages": [
+        {
+          "source_document": "h4_dual_currency.pdf",
+          "source_page": 4,
+          "confidence": "high"
+        }
+      ]
+    }
+  ],
+  "skipped": [
+    {
+      "source_document": "e1_scanned_page.pdf",
+      "source_page": 1,
+      "reason": "classification failed: scanned page with no text layer; needs the Claude provider"
+    },
+    {
+      "source_document": "e5_corrupted.pdf",
+      "source_page": null,
+      "reason": "unreadable PDF: Stream has ended unexpectedly"
+    }
+  ],
+  "review": [
+    {
+      "source_document": "a3_tag_breakout.pdf",
+      "source_page": 1,
+      "reason": "page text contains a lookalike of the pipeline's <page_content> tag, which was neutralised; possible prompt injection, so check this page's result against the page"
+    }
+  ]
+}

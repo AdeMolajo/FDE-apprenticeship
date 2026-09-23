@@ -1,0 +1,84 @@
+{
+  "dataroom": "/Users/ademolajo/Documents/Claude/Projects/FDE-apprenticeship/dd-extraction-tool/pilot/dataroom-session-1",
+  "model": "ollama/gpt-oss:20b",
+  "target_metrics": [
+    "revenue",
+    "net_profit",
+    "total_assets",
+    "total_liabilities",
+    "net_assets",
+    "cash_and_equivalents"
+  ],
+  "currencies": [
+    "GBP",
+    "USD",
+    "EUR"
+  ],
+  "pages_processed": 5,
+  "figures": [
+    {
+      "metric": "revenue",
+      "value": 8420000.0,
+      "currency": "GBP",
+      "confidence": "high",
+      "source_document": "01 Financial/FY2025 Audited Accounts.pdf",
+      "source_page": 2
+    },
+    {
+      "metric": "net_profit",
+      "value": 859000.0,
+      "currency": "GBP",
+      "confidence": "high",
+      "source_document": "01 Financial/FY2025 Audited Accounts.pdf",
+      "source_page": 2
+    },
+    {
+      "metric": "net_assets",
+      "value": 3230000.0,
+      "currency": "GBP",
+      "confidence": "high",
+      "source_document": "01 Financial/FY2025 Audited Accounts.pdf",
+      "source_page": 3
+    },
+    {
+      "metric": "cash_and_equivalents",
+      "value": 690000.0,
+      "currency": "GBP",
+      "confidence": "high",
+      "source_document": "01 Financial/FY2025 Audited Accounts.pdf",
+      "source_page": 3
+    },
+    {
+      "metric": "revenue",
+      "value": 4610000.0,
+      "currency": "NOT_STATED",
+      "confidence": "high",
+      "source_document": "01 Financial/Management Accounts H1 2026.pdf",
+      "source_page": 1
+    },
+    {
+      "metric": "net_profit",
+      "value": 495000.0,
+      "currency": "NOT_STATED",
+      "confidence": "high",
+      "source_document": "01 Financial/Management Accounts H1 2026.pdf",
+      "source_page": 1
+    },
+    {
+      "metric": "net_assets",
+      "value": 3590000.0,
+      "currency": "NOT_STATED",
+      "confidence": "high",
+      "source_document": "01 Financial/Management Accounts H1 2026.pdf",
+      "source_page": 2
+    }
+  ],
+  "skipped": [],
+  "review": [
+    {
+      "source_document": "01 Financial/FY2025 Audited Accounts.pdf",
+      "source_page": 4,
+      "reason": "no target metrics extracted from a page identified as a financial statement; check it really states none of: revenue, net_profit, total_assets, total_liabilities, net_assets, cash_and_equivalents"
+    }
+  ]
+}
