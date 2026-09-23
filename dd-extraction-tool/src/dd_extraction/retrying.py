@@ -54,6 +54,7 @@ def post_with_retry(
     sleep: Optional[Callable[[float], None]] = None,
     jitter: Optional[Callable[[], float]] = None,
     notify: Optional[Callable[[str], None]] = None,
+    on_retry: Optional[Callable[[], None]] = None,
 ) -> httpx.Response:
     """POST, retrying rate limits and transient failures. Raises httpx.HTTPError if the
     last attempt fails to get a response; otherwise returns the last response, whose
@@ -62,6 +63,7 @@ def post_with_retry(
     sleep/jitter/notify are resolved per call, not bound as defaults, so tests (and
     debugging) can replace them."""
     sleep = sleep or time.sleep
+    on_retry = on_retry or (lambda: None)
     jitter = jitter or random.random
     notify = notify or notify_stderr
     for attempt in range(retries + 1):
@@ -74,6 +76,7 @@ def post_with_retry(
             delay = backoff_delay(attempt, jitter())
             notify(f"request failed ({type(exc).__name__}); retrying in {delay:.1f}s "
                    f"(attempt {attempt + 2} of {retries + 1})")
+            on_retry()
             sleep(delay)
             continue
         if response.status_code not in RETRY_STATUS or last:
@@ -82,5 +85,6 @@ def post_with_retry(
         delay = backoff_delay(attempt, jitter()) if delay is None else delay
         notify(f"provider returned {response.status_code}; retrying in {delay:.1f}s "
                f"(attempt {attempt + 2} of {retries + 1})")
+        on_retry()
         sleep(delay)
     raise AssertionError("unreachable")  # pragma: no cover

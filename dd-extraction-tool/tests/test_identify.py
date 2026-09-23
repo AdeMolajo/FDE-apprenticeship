@@ -163,7 +163,7 @@ def test_bad_api_key_stops_the_run(dataroom: Path, tmp_path: Path, monkeypatch, 
         raise anthropic.AuthenticationError("invalid x-api-key", response=response, body=None)
 
     monkeypatch.setenv("ANTHROPIC_API_KEY", "sk-ant-invalid")
-    monkeypatch.setattr(cli, "make_claude_classifier", lambda model: rejected)
+    monkeypatch.setattr(cli, "make_claude_classifier", lambda model, stats=None: rejected)
     out = tmp_path / "report.json"
 
     assert main([str(dataroom), "--out", str(out)]) == 1
@@ -190,7 +190,7 @@ def counting_classifier(monkeypatch):
         return NO
 
     monkeypatch.setenv("ANTHROPIC_API_KEY", "sk-ant-test")
-    monkeypatch.setattr(cli, "make_claude_classifier", lambda model: classify)
+    monkeypatch.setattr(cli, "make_claude_classifier", lambda model, stats=None: classify)
     return calls
 
 

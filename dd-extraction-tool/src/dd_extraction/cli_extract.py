@@ -9,6 +9,7 @@ command.
 from __future__ import annotations
 
 import argparse
+import json
 import os
 import re
 import sys
@@ -24,6 +25,7 @@ from .extract import (
     make_ollama_extractor,
 )
 from .identify import ProviderAuthError
+from .runlog import DEFAULT_LOG_NAME, RunLogger, RunStats
 from .schema import IdentificationReport
 
 
@@ -55,6 +57,11 @@ def main(argv: Optional[List[str]] = None) -> int:
         "--currencies",
         help="comma-separated ISO 4217 codes to accept (default: " + ", ".join(DEFAULT_CURRENCIES) + "). "
         "Figures in any other currency are skipped with a reason, never relabelled",
+    )
+    parser.add_argument(
+        "--log",
+        type=Path,
+        help=f"run log to append to (default: {DEFAULT_LOG_NAME} next to --out)",
     )
     args = parser.parse_args(argv)
 
@@ -94,24 +101,33 @@ def main(argv: Optional[List[str]] = None) -> int:
         invalid = [c for c in currencies if not re.fullmatch(r"[A-Z]{3}", c)]
         if invalid or not currencies:
             parser.error(f"--currencies needs three-letter ISO codes such as GBP,USD; got {', '.join(invalid) or 'none'}")
+    stats = RunStats()
+    log_path = (args.log or out.parent / DEFAULT_LOG_NAME).resolve()
     extract = make_ollama_extractor(
-        model=model, host=host, api_key=api_key, target_metrics=metrics, currencies=currencies
+        model=model, host=host, api_key=api_key, target_metrics=metrics, currencies=currencies,
+        stats=stats,
     )
 
-    try:
-        report = extract_figures(
-            dataroom,
-            identification,
-            extract,
-            model=f"ollama/{model}",
-            target_metrics=metrics,
-            currencies=currencies,
-        )
-    except ProviderAuthError as exc:
-        print(f"error: Ollama rejected the key ({exc}). Check OLLAMA_API_KEY.", file=sys.stderr)
-        return 1
-
-    out.write_text(report.model_dump_json(indent=2) + "\n", encoding="utf-8")
+    inputs = {"dataroom": str(dataroom), "identification": str(args.identification),
+              "metrics": metrics or DEFAULT_TARGET_METRICS, "currencies": currencies,
+              "pages_requested": sum(len(f.pages) for f in identification.financial_statement_files)}
+    with RunLogger("dd-extract", "extract", log_path, inputs, f"ollama/{model}", "ollama", stats) as logger:
+        try:
+            report = extract_figures(
+                dataroom,
+                identification,
+                extract,
+                model=f"ollama/{model}",
+                target_metrics=metrics,
+                currencies=currencies,
+            )
+        except ProviderAuthError as exc:
+            logger.finish(None, None, "error", f"{type(exc).__name__}: {exc}")
+            print(f"error: Ollama rejected the key ({exc}). Check OLLAMA_API_KEY.", file=sys.stderr)
+            return 1
+        data = report.model_dump(mode="json")
+        out.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
+        logger.finish(out, data, "ok")
 
     print(
         f"Processed {report.pages_processed} pages, extracted {len(report.figures)} figures; "
@@ -125,6 +141,12 @@ def main(argv: Optional[List[str]] = None) -> int:
             f"{figure.value} {figure.currency} ({figure.confidence})"
         )
     print(f"Report written to {out}")
+    record = logger.record
+    print(f"Run logged to {log_path}: shape {record['shape']['status']}, "
+          f"{record['usage']['model_calls']} model calls, "
+          f"{record['usage']['prompt_tokens'] + record['usage']['completion_tokens']:,} tokens"
+          + (f", cost {record['cost']['amount']:.4f} {record['cost']['currency']}"
+             if record["cost"]["amount"] is not None else ""))
     return 0
 
 

@@ -21,6 +21,7 @@ from pydantic import ValidationError
 from .dataroom import Page
 from .framing import CLASSIFY_AFTER_PAGE, wrap_page_text
 from .retrying import DEFAULT_RETRIES, post_with_retry
+from .runlog import RunStats
 from .identify import SYSTEM_PROMPT, ClassificationError, PageClassifier, ProviderAuthError
 from .schema import PageClassification
 
@@ -52,8 +53,10 @@ def make_ollama_classifier(
     api_key: Optional[str] = None,
     client: Optional[httpx.Client] = None,
     retries: int = DEFAULT_RETRIES,
+    stats: Optional[RunStats] = None,
 ) -> PageClassifier:
     """Return a classifier that makes one Ollama chat call per page."""
+    stats = stats or RunStats()
     headers = {"Authorization": f"Bearer {api_key}"} if api_key else {}
     client = client or httpx.Client(base_url=host, headers=headers, timeout=120)
 
@@ -74,13 +77,19 @@ def make_ollama_classifier(
             ],
         }
         try:
-            response = post_with_retry(client, "/api/chat", payload, retries=retries)
+            response = post_with_retry(client, "/api/chat", payload, retries=retries,
+                                       on_retry=stats.record_retry)
         except httpx.HTTPError as exc:
+            stats.record_failure()
             raise ClassificationError(f"request failed after retries: {exc}") from exc
+        if response.status_code != 200:
+            stats.record_failure()
         if response.status_code in (401, 403):
             raise ProviderAuthError(f"Ollama rejected the API key ({response.status_code})")
         if response.status_code != 200:
             raise ClassificationError(f"Ollama returned {response.status_code}: {response.text[:120]}")
-        return parse_answer(response.json().get("message", {}).get("content", ""))
+        body = response.json()
+        stats.record_ollama(body)
+        return parse_answer(body.get("message", {}).get("content", ""))
 
     return classify

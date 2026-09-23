@@ -44,6 +44,7 @@ from .dataroom import Page, load_pages
 from .framing import EXTRACT_AFTER_PAGE, INJECTION_REVIEW_REASON, contains_frame_tag, wrap_page_text
 from .identify import ProviderAuthError
 from .retrying import DEFAULT_RETRIES, post_with_retry
+from .runlog import RunStats
 from .ollama import DEFAULT_OLLAMA_HOST, DEFAULT_OLLAMA_MODEL
 from .schema import (
     NOT_STATED,
@@ -147,11 +148,13 @@ def make_ollama_extractor(
     target_metrics: Optional[List[str]] = None,
     currencies: Optional[List[str]] = None,
     retries: int = DEFAULT_RETRIES,
+    stats: Optional[RunStats] = None,
 ) -> PageExtractor:
     """Return an extractor that makes one Ollama chat call per page."""
     system_prompt = build_system_prompt(
         target_metrics or DEFAULT_TARGET_METRICS, currencies or DEFAULT_CURRENCIES
     )
+    stats = stats or RunStats()
     headers = {"Authorization": f"Bearer {api_key}"} if api_key else {}
     client = client or httpx.Client(base_url=host, headers=headers, timeout=120)
 
@@ -170,14 +173,20 @@ def make_ollama_extractor(
             ],
         }
         try:
-            response = post_with_retry(client, "/api/chat", payload, retries=retries)
+            response = post_with_retry(client, "/api/chat", payload, retries=retries,
+                                       on_retry=stats.record_retry)
         except httpx.HTTPError as exc:
+            stats.record_failure()
             raise ExtractionError(f"request failed after retries: {exc}") from exc
+        if response.status_code != 200:
+            stats.record_failure()
         if response.status_code in (401, 403):
             raise ProviderAuthError(f"Ollama rejected the API key ({response.status_code})")
         if response.status_code != 200:
             raise ExtractionError(f"Ollama returned {response.status_code}: {response.text[:120]}")
-        return parse_answer(response.json().get("message", {}).get("content", ""))
+        body = response.json()
+        stats.record_ollama(body)
+        return parse_answer(body.get("message", {}).get("content", ""))
 
     return extract
 

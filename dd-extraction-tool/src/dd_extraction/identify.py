@@ -17,6 +17,7 @@ from pypdf.errors import PdfReadError
 
 from .dataroom import Page, load_pages, walk_dataroom
 from .framing import CLASSIFY_AFTER_PAGE, INJECTION_REVIEW_REASON, contains_frame_tag, wrap_page_text
+from .runlog import RunStats
 from .schema import (
     FinancialStatementFile,
     IdentificationReport,
@@ -86,10 +87,12 @@ def build_user_content(page: Page) -> List[Dict[str, object]]:
 
 
 def make_claude_classifier(
-    client: Optional[anthropic.Anthropic] = None, model: str = DEFAULT_MODEL
+    client: Optional[anthropic.Anthropic] = None, model: str = DEFAULT_MODEL,
+    stats: Optional[RunStats] = None,
 ) -> PageClassifier:
     """Return a classifier that makes one structured-output Claude call per page."""
     client = client or anthropic.Anthropic()
+    stats = stats or RunStats()
 
     def classify(page: Page) -> PageClassification:
         response = client.messages.parse(
@@ -99,6 +102,7 @@ def make_claude_classifier(
             messages=[{"role": "user", "content": build_user_content(page)}],
             output_format=PageClassification,
         )
+        stats.record_anthropic(response)
         if response.stop_reason != "end_turn" or response.parsed_output is None:
             raise ClassificationError(f"no classification (stop_reason={response.stop_reason})")
         return PageClassification.model_validate(response.parsed_output.model_dump())
