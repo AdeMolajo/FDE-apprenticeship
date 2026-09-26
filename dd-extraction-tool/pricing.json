@@ -1,0 +1,11 @@
+{
+  "_source": "ollama.com/pricing read 26 September 2026; Anthropic rates from the Claude API model table (cached 24 June 2026). Prices are per million tokens. Check them before trusting a cost figure: they change, and this file is a snapshot.",
+  "_not_applied": "Ollama also publishes a cached-input rate (gpt-oss:20b $0.035/Mtok), but its API response does not report cached tokens, so every input token is priced at the full rate. Logged costs are therefore an upper bound. Off-peak rates exist for some models but not for gpt-oss:20b.",
+
+  "ollama/gpt-oss:20b": { "input_per_mtok": 0.07, "output_per_mtok": 0.30, "currency": "USD" },
+  "ollama/gpt-oss:120b": { "input_per_mtok": 0.15, "output_per_mtok": 0.60, "currency": "USD" },
+  "ollama/gemma4": { "input_per_mtok": 0.14, "output_per_mtok": 0.40, "currency": "USD" },
+  "ollama/nemotron-3-nano": { "input_per_mtok": 0.06, "output_per_mtok": 0.24, "currency": "USD" },
+
+  "anthropic/claude-haiku-4-5": { "input_per_mtok": 1.00, "output_per_mtok": 5.00, "currency": "USD" }
+}

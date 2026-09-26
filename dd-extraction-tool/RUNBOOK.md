@@ -12,7 +12,21 @@ What to check when something goes wrong. Current as of 23 September 2026.
 
 It gives each run's status, shape pass/fail, duration, model calls, retries, failed calls, tokens and cost, and lists shape problems under the run that had them.
 
+## Cost
+
+Set the price file once per session, so the log records real money instead of nulls:
+
+```bash
+export DD_PRICING="$(git rev-parse --show-toplevel)/dd-extraction-tool/pricing.json"
+```
+
+`pricing.json` holds published rates (`gpt-oss:20b`: $0.07 per million input tokens, $0.30 output, read 26 September 2026). **Check them before quoting a cost**: they change, and the file is a snapshot.
+
+Measured from the logged run of a 6-document, 11-page data room: **$0.0000788 per page classified, $0.0001817 per statement page extracted, $0.0003 per document.** A document with `p` pages of which `s` are statements costs `p x 0.0000788 + s x 0.0001817`, so a 500-page data room with 15% statement pages is about $0.05. Two things that figure does not include: Ollama's cached-input discount, which its API does not report, so the number is an upper bound; and human review time, which costs orders of magnitude more than the model and is not measured anywhere.
+
 ## Symptoms
+
+**`cost` shows `—` in the table, or `cost.amount` is null in the log** — no price file is configured. Export `DD_PRICING` as above and rerun. Past records are not repriced; recompute them from their token counts if you need to.
 
 **`OLLAMA_API_KEY is not set (needed for Ollama Cloud)`** — load the key from the Keychain into the session. Nothing was spent. (`dd-identify --provider anthropic` says `ANTHROPIC_API_KEY is not set` instead.)
 
