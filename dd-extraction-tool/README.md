@@ -147,11 +147,11 @@ started (UTC)       command     status  shape    secs  calls   tokens      cost 
 
 **Cost.** Token counts always come from the provider's own response, so they are measured, not estimated. A money figure appears only when prices are configured, via a JSON file named by `DD_PRICING`:
 
-```json
-{"ollama/gpt-oss:20b": {"input_per_mtok": 0.10, "output_per_mtok": 0.40, "currency": "USD"}}
+```bash
+export DD_PRICING="$(git rev-parse --show-toplevel)/dd-extraction-tool/pricing.json"
 ```
 
-Those numbers are an example, not Ollama's published rates: put in the prices you are actually charged. Without the file, `cost.amount` is `null` with a reason, rather than a made-up number.
+`pricing.json` in this folder holds published rates as of 26 September 2026 (`gpt-oss:20b`: $0.07 per million input tokens, $0.30 output). Rates change, so check them before quoting a cost, and note that Ollama's cheaper cached-input rate is not applied because its API does not report cached tokens: logged costs are an upper bound. Without the file, `cost.amount` is `null` with a reason, rather than a made-up number.
 
 **Failures are logged too.** A rejected key, an unwritten report or an unexpected crash still writes a record, with `status: "error"` and the error message, so the log is a complete history of attempts rather than only of successes.
 
