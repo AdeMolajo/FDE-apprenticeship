@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}Start a run · DD extraction{% endblock %}
+{% block nav %}<a href="{{ url_for('home') }}" class="btn">Cancel</a>{% endblock %}
+{% block content %}
+<h1>Start a run</h1>
+<p class="lede">The data room is only read. Results are written to a separate folder.</p>
+
+{% if error %}
+<div class="panel stopped" style="margin-bottom: 20px">
+  <h3 style="margin: 0 0 4px; color: inherit">That didn't start</h3>
+  <p style="margin: 0; font-size: 13px">{{ error }}</p>
+</div>
+{% endif %}
+
+<form method="post" style="max-width: 880px">
+  <div class="panel" style="padding: 24px">
+    <div style="margin-bottom: 22px">
+      <label class="field" for="dataroom">Data room folder</label>
+      <input type="text" id="dataroom" name="dataroom" value="{{ defaults.dataroom }}"
+             placeholder="/Deals/Project Harbour/Data room" required>
+      <div class="hint">The full path to the folder. PDFs are read; anything else is listed as not read.</div>
+    </div>
+
+    <div style="margin-bottom: 22px">
+      <span class="field">Figures to extract</span>
+      <div class="chips">
+        {% for metric in ["revenue", "net_profit", "total_assets", "total_liabilities", "net_assets", "cash_and_equivalents", "ebitda"] %}
+        <label class="chip">
+          <input type="checkbox" name="metrics" value="{{ metric }}"
+                 {% if metric in defaults.metrics %}checked{% endif %}>
+          <span>{{ metric.replace("_", " ") }}</span>
+        </label>
+        {% endfor %}
+      </div>
+      <div class="hint">Only these are looked for. Anything else on the page is left alone.</div>
+    </div>
+
+    <div>
+      <label class="field" for="currencies">Currencies accepted</label>
+      <input type="text" id="currencies" name="currencies" value="{{ defaults.currencies | join(', ') }}">
+      <div class="hint">A figure in any other currency is listed with a reason, never relabelled. A page that states no currency is recorded as NOT STATED.</div>
+    </div>
+  </div>
+
+  <div class="panel" style="margin-top: 20px">
+    <h3>What this will do</h3>
+    <p class="small" style="margin: 0">
+      One model call per page to find financial statements, then one per statement page to read the figures.
+      Expect about 2 seconds a page for the first pass and 4 for the second, and roughly $0.0003 a document.
+      Page text is sent to the model provider, so use this only on documents the client has approved for that.
+    </p>
+  </div>
+
+  <div style="margin-top: 24px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap">
+    <button type="submit" class="btn primary">Start run</button>
+    <a href="{{ url_for('home') }}" class="btn">Cancel</a>
+    <span class="small">You can close the page. The run keeps going.</span>
+  </div>
+</form>
+{% endblock %}

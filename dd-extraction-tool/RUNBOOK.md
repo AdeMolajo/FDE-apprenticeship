@@ -24,6 +24,16 @@ export DD_PRICING="$(git rev-parse --show-toplevel)/dd-extraction-tool/pricing.j
 
 Measured from the logged run of a 6-document, 11-page data room: **$0.0000788 per page classified, $0.0001817 per statement page extracted, $0.0003 per document.** A document with `p` pages of which `s` are statements costs `p x 0.0000788 + s x 0.0001817`, so a 500-page data room with 15% statement pages is about $0.05. Two things that figure does not include: Ollama's cached-input discount, which its API does not report, so the number is an upper bound; and human review time, which costs orders of magnitude more than the model and is not measured anywhere.
 
+## The web application
+
+```bash
+.venv/bin/dd-web          # http://127.0.0.1:5000
+```
+
+- **Port already in use**: set `DD_WEB_PORT` to another port.
+- **A run shows "failed"**: the page names the reason; the symptoms below apply unchanged.
+- **Verifications** are appended to `verifications.jsonl` beside that run's reports: one line per decision, with who, when and seconds on the page. Nothing rewrites them.
+
 ## Symptoms
 
 **`cost` shows `—` in the table, or `cost.amount` is null in the log** — no price file is configured. Export `DD_PRICING` as above and rerun. Past records are not repriced; recompute them from their token counts if you need to.

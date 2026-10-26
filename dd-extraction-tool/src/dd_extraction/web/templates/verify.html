@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block title %}Check page {{ page.source_page }} · DD extraction{% endblock %}
+{% block nav %}<a href="{{ url_for('results', job_id=job.id) }}" class="btn">Back to results</a>{% endblock %}
+{% block content %}
+
+<h1 style="font-size: 20px">{{ page.source_document }}</h1>
+<p class="lede">Page {{ page.source_page }} · statement page {{ position }} of {{ total }} in this run</p>
+
+<div class="columns" style="margin-top: 8px">
+  <section class="col-main">
+    <h2>The page, as the tool read it</h2>
+    <div class="page-text">{% for line in lines %}{{ line }}
+{% endfor %}</div>
+    <p class="hint">This is the text layer of the PDF, unaltered. If it looks wrong here, it looked wrong to the model too.</p>
+  </section>
+
+  <aside class="col-side">
+    <h2>Figures from this page</h2>
+    {% if figures %}
+      {% for row in figures %}
+      <div class="panel">
+        <div style="display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap">
+          <span style="font-size: 13px; font-weight: 600">{{ row.figure.metric.replace("_", " ") }}</span>
+          <span class="grow"></span>
+          <span style="font-size: 18px; font-weight: 600; font-variant-numeric: tabular-nums">{{ "{:,.0f}".format(row.figure.value) }}</span>
+          <span class="small">{{ "not stated" if row.figure.currency == "NOT_STATED" else row.figure.currency }}</span>
+        </div>
+
+        {% if row.verification %}
+        <p class="small" style="margin: 10px 0 0">
+          {% if row.verification.decision == "matches" %}Confirmed{% else %}Marked wrong{% endif %}
+          by {{ row.verification.by }} at {{ row.verification.at.replace("T", " ")[11:19] }}
+          {%- if row.verification.seconds_on_page %} after {{ row.verification.seconds_on_page }}s on this page{% endif %}.
+          {% if row.verification.note %}<br>Note: {{ row.verification.note }}{% endif %}
+        </p>
+        {% endif %}
+
+        <form method="post" action="{{ url_for('save_verification', job_id=job.id) }}" style="margin-top: 12px">
+          <input type="hidden" name="document" value="{{ page.source_document }}">
+          <input type="hidden" name="page" value="{{ page.source_page }}">
+          <input type="hidden" name="metric" value="{{ row.figure.metric }}">
+          <input type="hidden" name="opened_at" value="{{ opened_at }}">
+          <label class="field" for="by-{{ loop.index }}" style="font-weight: 400; font-size: 12px; color: var(--muted)">Your name</label>
+          <input type="text" id="by-{{ loop.index }}" name="by" value="{{ reviewer }}" style="height: 34px; margin-bottom: 8px">
+          <label class="field" for="note-{{ loop.index }}" style="font-weight: 400; font-size: 12px; color: var(--muted)">Note (optional)</label>
+          <input type="text" id="note-{{ loop.index }}" name="note" style="height: 34px; margin-bottom: 10px">
+          <div style="display: flex; gap: 8px; flex-wrap: wrap">
+            <button type="submit" name="decision" value="matches" class="btn primary small">Matches the page</button>
+            <button type="submit" name="decision" value="wrong" class="btn small">Wrong figure</button>
+          </div>
+        </form>
+      </div>
+      {% endfor %}
+    {% else %}
+      <div class="panel">
+        <h3>No figures from this page</h3>
+        <p class="small" style="margin: 0">Either the page states none of the metrics asked for, or extraction could not read it. The results page lists the reason.</p>
+      </div>
+    {% endif %}
+
+    <div style="display: flex; gap: 10px; flex-wrap: wrap">
+      {% if next_page %}
+      <a class="btn primary" href="{{ url_for('verify', job_id=job.id, document=next_page[0], page=next_page[1]) }}">Next page</a>
+      {% endif %}
+      <a class="btn" href="{{ url_for('results', job_id=job.id) }}">Back to results</a>
+    </div>
+  </aside>
+</div>
+{% endblock %}

@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}Running · DD extraction{% endblock %}
+{% block head %}<meta http-equiv="refresh" content="3">{% endblock %}
+{% block nav %}<a href="{{ url_for('home') }}" class="btn">All runs</a>{% endblock %}
+{% block content %}
+<h1>{{ job.dataroom.name }}</h1>
+<p class="lede">Started {{ job.started_at.replace("T", " ")[:19] }} · this page refreshes itself</p>
+
+<div class="panel" style="max-width: 640px">
+  <h3>{{ job.state }}</h3>
+  <div class="progress" style="margin: 12px 0 8px"><div style="width: {{ job.progress }}%"></div></div>
+  <p class="small" style="margin: 0">
+    {{ job.pages_done }} of {{ job.pages_total }} pages
+    {%- if job.state == "finding statements" %} read{% else %} extracted{% endif %}.
+  </p>
+</div>
+
+<p class="small" style="margin-top: 20px">You can leave this page; the run continues and appears under <a href="{{ url_for('home') }}">Runs</a>.</p>
+{% endblock %}

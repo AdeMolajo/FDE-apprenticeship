@@ -4,6 +4,8 @@
 
 **Running it.** From `dd-extraction-tool/`, load your key, then run identify, then extract against the report it produced. The README has the exact commands. Expect roughly 2 seconds per page for identify and 4 for extract: a 500-page data room takes about 25 minutes.
 
+**The app.** `dd-web` gives you the same thing in a browser at http://127.0.0.1:5000, including a page that shows each figure beside the page text so you can confirm it. Confirmations are recorded with your name and the time.
+
 **Before you use the output.** Read the `skipped` and `review` lists first, every time. `skipped` is what it could not read: scans, non-PDFs, failed calls. `review` is what needs your eye, including possible injected instructions. A page that fails one run often succeeds on a rerun, so a short `skipped` list is worth rerunning.
 
 **Four things to know.**

@@ -14,6 +14,10 @@ What is exposed, to whom, and what bounds it. Current as of 23 September 2026.
 
 The alternative is a local Ollama server via `OLLAMA_HOST`, where no page text leaves the machine. Step 2 has no Claude provider, so Ollama is currently the only route.
 
+## The web application
+
+`dd-web` binds to `127.0.0.1` only, so nothing outside the machine can reach it. It has **no authentication**: anyone at the keyboard can start a run and record a verification under any name they type. The name on a verification is a label, not an identity. It runs the pipeline in-process, never through a shell, and refuses to read a document outside the data room it was given.
+
 ## Credentials
 
 `OLLAMA_API_KEY` is read from the environment. The recommended store is the macOS Keychain, read at the point of use, so the key never appears in a file, a command line or shell history. A key grants full access to the Ollama account: there is no scoping or read-only variant, so rotation is the only control. One key was rotated during development after being exposed in a chat transcript.

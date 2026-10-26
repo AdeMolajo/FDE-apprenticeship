@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Run failed · DD extraction{% endblock %}
+{% block nav %}<a href="{{ url_for('new_run') }}" class="btn primary">New run</a>{% endblock %}
+{% block content %}
+<h1>The run stopped</h1>
+<p class="lede">{{ job.dataroom }} · started {{ job.started_at.replace("T", " ")[:19] }}</p>
+
+<div class="panel stopped" style="max-width: 760px">
+  <h3 style="color: inherit">What went wrong</h3>
+  <p style="margin: 0 0 12px; font-size: 13px">{{ job.error }}</p>
+  <p style="margin: 0; font-size: 12px">
+    Nothing was written for this run beyond the log entry. The data room is untouched.
+    The runbook lists what each message means.
+  </p>
+</div>
+
+<div style="margin-top: 20px; display: flex; gap: 12px">
+  <a href="{{ url_for('new_run') }}" class="btn primary">Try again</a>
+  <a href="{{ url_for('home') }}" class="btn">All runs</a>
+</div>
+{% endblock %}

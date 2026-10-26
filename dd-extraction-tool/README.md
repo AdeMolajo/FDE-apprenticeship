@@ -124,6 +124,23 @@ Differences from the Claude provider:
 - **Rate limits and transient errors are retried.** A 429, a 5xx or a dropped connection is retried up to 3 times with exponential backoff (about 2s, 4s then 8s, or the provider's `Retry-After` if it sends one), and each retry is announced on stderr. A page is only skipped once the retries are exhausted. A rejected key still stops the run immediately, and a 400 is never retried.
 - **Different trust boundary.** Pages are sent to Ollama's servers. That's fine for test data, but real deal documents should only go to a provider the client has approved (Gate 3, Topic 5).
 
+## The web application
+
+A local web app over the same pipeline: start a run, watch it, read the results, and check each figure against its page.
+
+```bash
+export OLLAMA_API_KEY="$(security find-generic-password -a "$USER" -s ollama-api-key -w)"
+.venv/bin/dd-web
+```
+
+Then open http://127.0.0.1:5000. It binds to localhost only and has no sign-in: it runs as whoever started it (see SECURITY.md).
+
+What it adds over the commands:
+
+- **Every file is listed**, including documents read but not flagged, which the JSON report alone leaves out.
+- **Check page** shows the page text beside the figures, and records the decision, who made it, and how long the page took. Those records go to `verifications.jsonl` beside the run's reports, and are the only measurement of human review time the project has.
+- **Export CSV** includes who checked each figure and when, or `unchecked`.
+
 ## Run log
 
 Every run of either command appends one JSON object to a run log, by default `runs.jsonl` next to the report (`--log` sets another path). Each record holds the input, the output and its counts, a pass/fail check of the output's shape, start and finish timestamps, duration, model calls, retries, failed calls, token counts and cost.
