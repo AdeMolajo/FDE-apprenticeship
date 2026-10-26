@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Runs · DD extraction{% endblock %}
+{% block content %}
+<h1>Runs</h1>
+<p class="lede">Every run started in this session, newest first. The run log below covers all runs, including those started from the command line.</p>
+
+{% if jobs %}
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr><th>Started</th><th>Data room</th><th>State</th><th class="num">Figures</th><th></th></tr>
+    </thead>
+    <tbody>
+      {% for job in jobs %}
+      <tr>
+        <td class="small">{{ job.started_at.replace("T", " ")[:19] }}</td>
+        <td>{{ job.dataroom }}</td>
+        <td>
+          {% if job.state == "done" %}<span class="pill ok">Complete</span>
+          {% elif job.state == "failed" %}<span class="pill stop">Failed</span>
+          {% else %}<span class="pill warn">{{ job.state }}</span>{% endif %}
+        </td>
+        <td class="num">{{ job.extraction.figures | length if job.extraction else "—" }}</td>
+        <td style="text-align: right"><a href="{{ url_for('results', job_id=job.id) }}">Open</a></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="panel">
+  <h3>Nothing has run yet</h3>
+  <p class="small" style="margin: 0 0 14px">Point it at a data room folder. It only reads; results are written elsewhere.</p>
+  <a href="{{ url_for('new_run') }}" class="btn primary">Start a run</a>
+</div>
+{% endif %}
+
+{% if log %}
+<h2 style="margin-top: 28px">Run log</h2>
+<pre class="log">{{ log }}</pre>
+{% endif %}
+{% endblock %}

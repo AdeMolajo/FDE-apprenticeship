@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+{% block title %}{{ job.dataroom.name }} · DD extraction{% endblock %}
+{% block nav %}
+<a href="{{ url_for('export_csv', job_id=job.id) }}" class="btn">Export CSV</a>
+<a href="{{ url_for('new_run') }}" class="btn primary">New run</a>
+{% endblock %}
+{% block content %}
+
+<h1>{{ job.dataroom.name }}</h1>
+<p class="lede">
+  {{ job.dataroom }} ·
+  finished {{ (job.finished_at or job.started_at).replace("T", " ")[:19] }} ·
+  {{ checked }} of {{ extraction.figures | length }} figures checked by a person
+</p>
+
+<div class="tiles">
+  <div class="tile"><div class="n">{{ identification.files_scanned }}</div><div class="l">Documents read</div></div>
+  <div class="tile"><div class="n">{{ identification.pages_classified }}</div><div class="l">Pages classified</div></div>
+  <div class="tile"><div class="n">{{ extraction.pages_processed }}</div><div class="l">Statement pages</div></div>
+  <div class="tile"><div class="n">{{ extraction.figures | length }}</div><div class="l">Figures extracted</div></div>
+</div>
+
+<div class="columns">
+  <section class="col-main">
+    <h2>Extracted figures</h2>
+    {% if figures %}
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Metric</th><th class="num">Value</th><th>Currency</th>
+            <th>Source</th><th>Checked</th><th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in figures %}
+          <tr>
+            <td style="font-weight: 500">{{ row.figure.metric.replace("_", " ") }}</td>
+            <td class="num">{{ "{:,.0f}".format(row.figure.value) }}</td>
+            <td>
+              {% if row.figure.currency == "NOT_STATED" %}
+                <span class="pill warn">not stated</span>
+              {% else %}{{ row.figure.currency }}{% endif %}
+            </td>
+            <td class="small">{{ row.figure.source_document }} · p{{ row.figure.source_page }}</td>
+            <td>
+              {% if row.verification and row.verification.decision == "matches" %}
+                <span class="pill ok">Confirmed</span>
+              {% elif row.verification %}
+                <span class="pill stop">Wrong</span>
+              {% else %}
+                <span class="pill grey">Not yet</span>
+              {% endif %}
+            </td>
+            <td style="text-align: right">
+              <a class="btn small" href="{{ url_for('verify', job_id=job.id,
+                 document=row.figure.source_document, page=row.figure.source_page) }}">Check page</a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <p class="hint">A figure counts as checked only when someone has compared it with the page.</p>
+    {% else %}
+    <div class="panel"><p class="small" style="margin: 0">No figures were found. Check the panels opposite: a page may have been skipped, or the metrics asked for may not appear in these documents.</p></div>
+    {% endif %}
+  </section>
+
+  <aside class="col-side">
+    {% if extraction.review or identification.review %}
+    <div class="panel attention">
+      <h3 style="color: inherit">Needs your eye ({{ (extraction.review | length) + (identification.review | length) }})</h3>
+      <ul class="plain">
+        {% for flag in identification.review + extraction.review %}
+        <li>
+          <div style="font-size: 13px; font-weight: 500; color: var(--ink)">{{ flag.source_document }} · p{{ flag.source_page }}</div>
+          <div style="font-size: 12px">{{ flag.reason }}</div>
+          <a class="btn small" style="margin-top: 8px" href="{{ url_for('verify', job_id=job.id,
+             document=flag.source_document, page=flag.source_page) }}">Open page</a>
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+
+    {% if extraction.skipped or identification.skipped %}
+    <div class="panel">
+      <h3>Not read ({{ (identification.skipped | length) + (extraction.skipped | length) }})</h3>
+      <ul class="plain">
+        {% for item in identification.skipped + extraction.skipped %}
+        <li>
+          <div style="font-size: 13px">{{ item.source_document }}{% if item.source_page %} · p{{ item.source_page }}{% endif %}</div>
+          <div class="small">{{ item.reason }}</div>
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+
+    <div class="panel">
+      <h3>Documents</h3>
+      <ul class="plain">
+        {% for file in identification.financial_statement_files %}
+        <li>
+          <div style="font-size: 13px">{{ file.source_document }}</div>
+          <div class="small">Statements on {{ file.pages | map(attribute='source_page') | join(', ') | replace(',', ', p', 1) }}</div>
+        </li>
+        {% endfor %}
+        {% for name in read_not_flagged %}
+        <li>
+          <div style="font-size: 13px; color: var(--ink-2)">{{ name }}</div>
+          <div class="small">Read, no statements found</div>
+        </li>
+        {% endfor %}
+        {% for name in not_pdfs %}
+        <li>
+          <div style="font-size: 13px; color: var(--ink-2)">{{ name }}</div>
+          <div class="small">Not a PDF, not read</div>
+        </li>
+        {% endfor %}
+      </ul>
+      <p class="hint">Every file in the folder is listed, whether or not it held a statement.</p>
+    </div>
+  </aside>
+</div>
+{% endblock %}
