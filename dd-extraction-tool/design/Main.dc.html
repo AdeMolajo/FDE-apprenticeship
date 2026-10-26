@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Run results — Northwind Components</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { margin: 0; font-family: Inter, system-ui, sans-serif; background: #FFFFFF; color: #16243A; }
+    a { color: #2E4A6B; }
+    a:hover { color: #16243A; }
+    table { border-collapse: collapse; }
+    th, td { text-align: left; }
+  </style>
+</helmet>
+
+<div style="min-height: 100%; background: #FFFFFF; display: flex; flex-direction: column">
+
+  <header style="display: flex; flex-wrap: wrap; gap: 16px; align-items: center; padding: 0 40px; height: 60px; border-bottom: 1px solid #DCE3EC; background: #FFFFFF">
+    <span style="font-size: 15px; font-weight: 700; letter-spacing: 0.02em; color: #16243A">DD&nbsp;EXTRACTION</span>
+    <span style="width: 1px; height: 22px; background: #DCE3EC"></span>
+    <span style="font-size: 13px; color: #44586F">Calder Bennett Partners</span>
+    <span style="flex-grow: 1"></span>
+    <a href="Runs.dc.html" style="font-size: 13px; text-decoration: none; color: #2E4A6B">Run history</a>
+    <span style="display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px; border-radius: 50%; background: #EBEFF5; color: #2E4A6B; font-size: 12px; font-weight: 600">AM</span>
+  </header>
+
+  <div style="padding: 28px 40px 12px; display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-end">
+    <div style="flex-grow: 1; min-width: 320px">
+      <div style="font-size: 12px; color: #5A6E86; margin-bottom: 6px">Project Harbour · Data room</div>
+      <h1 style="margin: 0; font-size: 26px; font-weight: 600; letter-spacing: -0.01em; color: #16243A">Northwind Components Ltd</h1>
+      <div style="margin-top: 8px; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; font-size: 12px; color: #5A6E86">
+        <span style="display: inline-flex; align-items: center; gap: 6px; padding: 3px 9px; border-radius: 3px; background: #EBEFF5; color: #2E4A6B; font-weight: 500">Complete</span>
+        <span>23 Sep 2026, 11:22</span><span>·</span><span>46 seconds</span><span>·</span><span>$0.0018</span>
+      </div>
+    </div>
+    <div style="display: flex; gap: 10px">
+      <a href="Verify.dc.html" style="display: inline-flex; align-items: center; height: 38px; padding: 0 16px; border: 1px solid #C7D2E0; border-radius: 4px; font-size: 13px; font-weight: 500; text-decoration: none; color: #2E4A6B; background: #FFFFFF">Export CSV</a>
+      <a href="NewRun.dc.html" style="display: inline-flex; align-items: center; height: 38px; padding: 0 16px; border: 1px solid #16243A; border-radius: 4px; font-size: 13px; font-weight: 500; text-decoration: none; color: #FFFFFF; background: #16243A">New run</a>
+    </div>
+  </div>
+
+  <div style="padding: 16px 40px 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px">
+    <sc-for list="{{stats}}" as="stat" hint-placeholder-count="4">
+      <div style="border: 1px solid #DCE3EC; border-radius: 4px; padding: 14px 16px; background: #FFFFFF">
+        <div style="font-size: 24px; font-weight: 600; color: #16243A; font-variant-numeric: tabular-nums">{{stat.value}}</div>
+        <div style="margin-top: 2px; font-size: 12px; color: #5A6E86">{{stat.label}}</div>
+      </div>
+    </sc-for>
+  </div>
+
+  <div style="padding: 20px 40px 40px; display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start">
+
+    <section style="flex: 999 1 620px; min-width: 0">
+      <div style="display: flex; flex-wrap: wrap; gap: 12px; align-items: baseline; margin-bottom: 10px">
+        <h2 style="margin: 0; font-size: 15px; font-weight: 600; color: #16243A">Extracted figures</h2>
+        <span style="font-size: 12px; color: #5A6E86">7 figures from 5 statement pages. Every figure links to the page it came from.</span>
+      </div>
+
+      <div style="overflow-x: auto; border: 1px solid #DCE3EC; border-radius: 4px">
+        <table style="width: 100%; min-width: 620px; font-size: 13px">
+          <thead>
+            <tr style="background: #F4F6F9">
+              <th style="padding: 10px 16px; font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: #5A6E86; border-bottom: 1px solid #DCE3EC">Metric</th>
+              <th style="padding: 10px 16px; font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: #5A6E86; border-bottom: 1px solid #DCE3EC; text-align: right">Value</th>
+              <th style="padding: 10px 16px; font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: #5A6E86; border-bottom: 1px solid #DCE3EC">Currency</th>
+              <th style="padding: 10px 16px; font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: #5A6E86; border-bottom: 1px solid #DCE3EC">Source</th>
+              <th style="padding: 10px 16px; font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: #5A6E86; border-bottom: 1px solid #DCE3EC"><span style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%)">Action</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            <sc-for list="{{rows}}" as="row" hint-placeholder-count="7">
+              <tr>
+                <td style="padding: 12px 16px; border-bottom: 1px solid #EBEFF5; color: #16243A; font-weight: 500">{{row.metric}}</td>
+                <td style="padding: 12px 16px; border-bottom: 1px solid #EBEFF5; color: #16243A; text-align: right; font-variant-numeric: tabular-nums">{{row.value}}</td>
+                <td style="padding: 12px 16px; border-bottom: 1px solid #EBEFF5">
+                  <span style="{{row.currencyStyle}}">{{row.currency}}</span>
+                </td>
+                <td style="padding: 12px 16px; border-bottom: 1px solid #EBEFF5; color: #44586F">{{row.source}}</td>
+                <td style="padding: 12px 16px; border-bottom: 1px solid #EBEFF5; text-align: right">
+                  <a href="Verify.dc.html" style="font-size: 12px; text-decoration: none; color: #2E4A6B; border-bottom: 1px solid #C7D2E0">Check page</a>
+                </td>
+              </tr>
+            </sc-for>
+          </tbody>
+        </table>
+      </div>
+
+      <p style="margin: 10px 2px 0; font-size: 12px; color: #5A6E86">
+        NOT&nbsp;STATED means the page shows no currency. The tool does not infer one.
+      </p>
+    </section>
+
+    <aside style="flex: 1 1 300px; min-width: 280px; display: flex; flex-direction: column; gap: 16px">
+
+      <div style="border: 1px solid #C9A227; border-left-width: 1px; border-radius: 4px; background: #FBF7EC">
+        <div style="padding: 12px 16px 8px; display: flex; gap: 8px; align-items: center">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <path d="M8 1.5 15 14H1L8 1.5Z" stroke="#7A5C14" stroke-width="1.4" stroke-linejoin="round"></path>
+            <path d="M8 6.2v3.4M8 11.6v.6" stroke="#7A5C14" stroke-width="1.4" stroke-linecap="round"></path>
+          </svg>
+          <h2 style="margin: 0; font-size: 13px; font-weight: 600; color: #5C4710">Needs your eye (1)</h2>
+        </div>
+        <div style="padding: 0 16px 14px">
+          <div style="font-size: 13px; font-weight: 500; color: #16243A">04 Other / Supplier Letter.pdf · p1</div>
+          <p style="margin: 4px 0 10px; font-size: 12px; line-height: 1.5; color: #5C4710">
+            The page contains text imitating an instruction to the tool. It was treated as data, not obeyed. Check this page's result against the document.
+          </p>
+          <a href="Verify.dc.html" style="display: inline-flex; align-items: center; height: 32px; padding: 0 12px; border: 1px solid #A98B2E; border-radius: 4px; font-size: 12px; font-weight: 500; text-decoration: none; color: #5C4710; background: #FFFFFF">Open page</a>
+        </div>
+      </div>
+
+      <div style="border: 1px solid #DCE3EC; border-radius: 4px">
+        <div style="padding: 12px 16px 8px">
+          <h2 style="margin: 0; font-size: 13px; font-weight: 600; color: #16243A">Not read (1)</h2>
+        </div>
+        <ul style="margin: 0; padding: 0 16px 14px; list-style: none; display: flex; flex-direction: column; gap: 10px">
+          <li>
+            <div style="font-size: 13px; color: #16243A">03 Commercial / Customer list.csv</div>
+            <div style="font-size: 12px; color: #5A6E86">Not a PDF</div>
+          </li>
+        </ul>
+      </div>
+
+      <div style="border: 1px solid #DCE3EC; border-radius: 4px">
+        <div style="padding: 12px 16px 8px">
+          <h2 style="margin: 0; font-size: 13px; font-weight: 600; color: #16243A">Documents</h2>
+        </div>
+        <ul style="margin: 0; padding: 0 16px 14px; list-style: none; display: flex; flex-direction: column; gap: 12px">
+          <sc-for list="{{docs}}" as="doc" hint-placeholder-count="4">
+            <li style="display: flex; gap: 10px; align-items: flex-start">
+              <span style="{{doc.dotStyle}}"></span>
+              <span style="flex-grow: 1; min-width: 0">
+                <span style="display: block; font-size: 13px; color: #16243A">{{doc.name}}</span>
+                <span style="display: block; font-size: 12px; color: #5A6E86">{{doc.detail}}</span>
+              </span>
+            </li>
+          </sc-for>
+        </ul>
+      </div>
+
+    </aside>
+  </div>
+</div>
+</x-dc>
+
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1020}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const plain = 'font-size: 12px; color: #44586F';
+    const muted = 'font-size: 12px; color: #5C4710; background: #F6EFDD; padding: 2px 7px; border-radius: 3px; white-space: nowrap';
+    const dot = (fill) => 'width: 8px; height: 8px; border-radius: 50%; margin-top: 5px; flex: 0 0 auto; background: ' + fill;
+    return {
+      stats: [
+        { value: '6', label: 'Documents read' },
+        { value: '11', label: 'Pages classified' },
+        { value: '5', label: 'Statement pages' },
+        { value: '7', label: 'Figures extracted' }
+      ],
+      rows: [
+        { metric: 'Revenue', value: '8,420,000', currency: 'GBP', currencyStyle: plain, source: 'FY2025 Audited Accounts · p2' },
+        { metric: 'Net profit', value: '859,000', currency: 'GBP', currencyStyle: plain, source: 'FY2025 Audited Accounts · p2' },
+        { metric: 'Net assets', value: '3,230,000', currency: 'GBP', currencyStyle: plain, source: 'FY2025 Audited Accounts · p3' },
+        { metric: 'Cash and equivalents', value: '690,000', currency: 'GBP', currencyStyle: plain, source: 'FY2025 Audited Accounts · p3' },
+        { metric: 'Revenue', value: '4,610,000', currency: 'NOT STATED', currencyStyle: muted, source: 'Management Accounts H1 2026 · p1' },
+        { metric: 'Net profit', value: '495,000', currency: 'NOT STATED', currencyStyle: muted, source: 'Management Accounts H1 2026 · p1' },
+        { metric: 'Net assets', value: '3,590,000', currency: 'NOT STATED', currencyStyle: muted, source: 'Management Accounts H1 2026 · p2' }
+      ],
+      docs: [
+        { name: 'FY2025 Audited Accounts.pdf', detail: 'Statements on pages 2, 3, 4', dotStyle: dot('#2E4A6B') },
+        { name: 'Management Accounts H1 2026.pdf', detail: 'Statements on pages 1, 2', dotStyle: dot('#2E4A6B') },
+        { name: 'Budget FY2027.pdf', detail: 'Read, no statements found', dotStyle: dot('#C7D2E0') },
+        { name: 'Shareholders Agreement.pdf', detail: 'Read, no statements found', dotStyle: dot('#C7D2E0') }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

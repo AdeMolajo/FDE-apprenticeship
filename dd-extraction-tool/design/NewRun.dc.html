@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Start a run</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { margin: 0; font-family: Inter, system-ui, sans-serif; background: #F4F6F9; color: #16243A; }
+    a { color: #2E4A6B; }
+    a:hover { color: #16243A; }
+    input[type="text"] { font-family: inherit; }
+  </style>
+</helmet>
+
+<div style="min-height: 100%; background: #F4F6F9; display: flex; flex-direction: column">
+
+  <header style="display: flex; flex-wrap: wrap; gap: 16px; align-items: center; padding: 0 40px; height: 60px; border-bottom: 1px solid #DCE3EC; background: #FFFFFF">
+    <span style="font-size: 15px; font-weight: 700; letter-spacing: 0.02em; color: #16243A">DD&nbsp;EXTRACTION</span>
+    <span style="width: 1px; height: 22px; background: #DCE3EC"></span>
+    <span style="font-size: 13px; color: #44586F">Calder Bennett Partners</span>
+    <span style="flex-grow: 1"></span>
+    <a href="Main.dc.html" style="font-size: 13px; text-decoration: none; color: #2E4A6B">Cancel</a>
+  </header>
+
+  <div style="padding: 32px 40px 48px; display: flex; justify-content: center">
+    <div style="width: 100%; max-width: 880px">
+
+      <h1 style="margin: 0 0 4px; font-size: 24px; font-weight: 600; letter-spacing: -0.01em">Start a run</h1>
+      <p style="margin: 0 0 24px; font-size: 13px; color: #5A6E86">The data room is only read. Results are written to a separate folder.</p>
+
+      <div style="background: #FFFFFF; border: 1px solid #DCE3EC; border-radius: 4px; padding: 24px 24px 8px">
+
+        <div style="margin-bottom: 22px">
+          <label for="dataroom" style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px">Data room folder</label>
+          <div style="display: flex; flex-wrap: wrap; gap: 8px">
+            <input id="dataroom" type="text" value="/Deals/Project Harbour/Data room" style="flex: 999 1 320px; min-width: 0; height: 40px; padding: 0 12px; border: 1px solid #C7D2E0; border-radius: 4px; font-size: 13px; color: #16243A; background: #FFFFFF">
+            <button type="button" style="height: 40px; padding: 0 16px; border: 1px solid #C7D2E0; border-radius: 4px; background: #FFFFFF; font-family: inherit; font-size: 13px; font-weight: 500; color: #2E4A6B; cursor: pointer">Browse</button>
+          </div>
+          <div style="margin-top: 8px; font-size: 12px; color: #5A6E86">6 PDFs found · 11 pages · 1 file is not a PDF and will be listed as not read</div>
+        </div>
+
+        <div style="margin-bottom: 22px">
+          <span style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 8px">Figures to extract</span>
+          <div style="display: flex; flex-wrap: wrap; gap: 8px">
+            <sc-for list="{{metrics}}" as="metric" hint-placeholder-count="6">
+              <label style="{{metric.style}}">
+                <input type="checkbox" checked="{{metric.on}}" style="margin: 0; accent-color: #2E4A6B">
+                <span>{{metric.label}}</span>
+              </label>
+            </sc-for>
+          </div>
+          <div style="margin-top: 8px; font-size: 12px; color: #5A6E86">Only these are looked for. Anything else on the page is left alone.</div>
+        </div>
+
+        <div style="margin-bottom: 22px; display: flex; flex-wrap: wrap; gap: 24px">
+          <div style="flex: 1 1 300px; min-width: 240px">
+            <label for="currencies" style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px">Currencies accepted</label>
+            <input id="currencies" type="text" value="GBP, USD, EUR" style="width: 100%; box-sizing: border-box; height: 40px; padding: 0 12px; border: 1px solid #C7D2E0; border-radius: 4px; font-size: 13px; color: #16243A; background: #FFFFFF">
+            <div style="margin-top: 8px; font-size: 12px; color: #5A6E86">A figure in any other currency is listed, not relabelled.</div>
+          </div>
+          <div style="flex: 1 1 300px; min-width: 240px">
+            <label for="model" style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px">Model</label>
+            <input id="model" type="text" value="gpt-oss:20b (Ollama Cloud)" style="width: 100%; box-sizing: border-box; height: 40px; padding: 0 12px; border: 1px solid #C7D2E0; border-radius: 4px; font-size: 13px; color: #16243A; background: #FFFFFF">
+            <div style="margin-top: 8px; font-size: 12px; color: #5A6E86">Page text leaves the firm. Use a local model for documents without client sign-off.</div>
+          </div>
+        </div>
+
+      </div>
+
+      <div style="margin-top: 20px; background: #FFFFFF; border: 1px solid #DCE3EC; border-radius: 4px; padding: 20px 24px">
+        <h2 style="margin: 0 0 12px; font-size: 13px; font-weight: 600">Before you start</h2>
+        <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px">
+          <sc-for list="{{estimates}}" as="estimate" hint-placeholder-count="3">
+            <div>
+              <div style="font-size: 20px; font-weight: 600; color: #16243A; font-variant-numeric: tabular-nums">{{estimate.value}}</div>
+              <div style="margin-top: 2px; font-size: 12px; color: #5A6E86">{{estimate.label}}</div>
+            </div>
+          </sc-for>
+        </div>
+        <p style="margin: 14px 0 0; font-size: 12px; line-height: 1.6; color: #5A6E86">
+          Based on 2.2 seconds and 727 tokens a page for finding statements, and 4.4 seconds and 1,353 tokens for each statement page. A 500-page data room is about 25 minutes and $0.05.
+        </p>
+      </div>
+
+      <div style="margin-top: 24px; display: flex; flex-wrap: wrap; gap: 12px; align-items: center">
+        <a href="Main.dc.html" style="display: inline-flex; align-items: center; height: 42px; padding: 0 20px; border: 1px solid #16243A; border-radius: 4px; font-size: 14px; font-weight: 500; text-decoration: none; color: #FFFFFF; background: #16243A">Start run</a>
+        <a href="Main.dc.html" style="display: inline-flex; align-items: center; height: 42px; padding: 0 16px; border: 1px solid #C7D2E0; border-radius: 4px; font-size: 14px; font-weight: 500; text-decoration: none; color: #2E4A6B; background: #FFFFFF">Cancel</a>
+        <span style="font-size: 12px; color: #5A6E86">You can close this window. The run keeps going.</span>
+      </div>
+
+    </div>
+  </div>
+</div>
+</x-dc>
+
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const chip = (on) => 'display: inline-flex; align-items: center; gap: 8px; height: 36px; padding: 0 14px; border-radius: 4px; font-size: 13px; cursor: pointer; border: 1px solid '
+      + (on ? '#2E4A6B' : '#C7D2E0') + '; background: ' + (on ? '#EBEFF5' : '#FFFFFF') + '; color: ' + (on ? '#16243A' : '#44586F');
+    return {
+      metrics: [
+        { label: 'Revenue', on: true, style: chip(true) },
+        { label: 'Net profit', on: true, style: chip(true) },
+        { label: 'Total assets', on: true, style: chip(true) },
+        { label: 'Total liabilities', on: true, style: chip(true) },
+        { label: 'Net assets', on: true, style: chip(true) },
+        { label: 'Cash and equivalents', on: true, style: chip(true) },
+        { label: 'EBITDA', on: false, style: chip(false) }
+      ],
+      estimates: [
+        { value: '11', label: 'Pages to read' },
+        { value: '~40 sec', label: 'Estimated time' },
+        { value: '~$0.002', label: 'Estimated model cost' }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>
