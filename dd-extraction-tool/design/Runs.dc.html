@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Run history</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { margin: 0; font-family: Inter, system-ui, sans-serif; background: #FFFFFF; color: #16243A; }
+    a { color: #2E4A6B; }
+    a:hover { color: #16243A; }
+    table { border-collapse: collapse; }
+    th, td { text-align: left; }
+  </style>
+</helmet>
+
+<div style="min-height: 100%; display: flex; flex-direction: column">
+
+  <header style="display: flex; flex-wrap: wrap; gap: 16px; align-items: center; padding: 0 40px; height: 60px; border-bottom: 1px solid #DCE3EC; background: #FFFFFF">
+    <span style="font-size: 15px; font-weight: 700; letter-spacing: 0.02em; color: #16243A">DD&nbsp;EXTRACTION</span>
+    <span style="width: 1px; height: 22px; background: #DCE3EC"></span>
+    <span style="font-size: 13px; color: #44586F">Calder Bennett Partners</span>
+    <span style="flex-grow: 1"></span>
+    <a href="Main.dc.html" style="font-size: 13px; text-decoration: none; color: #2E4A6B">Latest results</a>
+  </header>
+
+  <div style="padding: 28px 40px 48px">
+
+    <div style="display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-end; margin-bottom: 20px">
+      <div style="flex-grow: 1; min-width: 280px">
+        <h1 style="margin: 0 0 4px; font-size: 24px; font-weight: 600; letter-spacing: -0.01em">Run history</h1>
+        <p style="margin: 0; font-size: 13px; color: #5A6E86">Every run, whether it finished or not. Kept for audit.</p>
+      </div>
+      <a href="NewRun.dc.html" style="display: inline-flex; align-items: center; height: 38px; padding: 0 16px; border: 1px solid #16243A; border-radius: 4px; font-size: 13px; font-weight: 500; text-decoration: none; color: #FFFFFF; background: #16243A">New run</a>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; margin-bottom: 22px">
+      <sc-for list="{{totals}}" as="total" hint-placeholder-count="4">
+        <div style="border: 1px solid #DCE3EC; border-radius: 4px; padding: 14px 16px">
+          <div style="font-size: 22px; font-weight: 600; font-variant-numeric: tabular-nums">{{total.value}}</div>
+          <div style="margin-top: 2px; font-size: 12px; color: #5A6E86">{{total.label}}</div>
+        </div>
+      </sc-for>
+    </div>
+
+    <div style="overflow-x: auto; border: 1px solid #DCE3EC; border-radius: 4px">
+      <table style="width: 100%; min-width: 900px; font-size: 13px">
+        <thead>
+          <tr style="background: #F4F6F9">
+            <sc-for list="{{columns}}" as="column" hint-placeholder-count="7">
+              <th style="{{column.style}}">{{column.label}}</th>
+            </sc-for>
+          </tr>
+        </thead>
+        <tbody>
+          <sc-for list="{{runs}}" as="run" hint-placeholder-count="5">
+            <tr>
+              <td style="padding: 12px 16px; border-bottom: 1px solid #EBEFF5; color: #44586F; white-space: nowrap">{{run.started}}</td>
+              <td style="padding: 12px 16px; border-bottom: 1px solid #EBEFF5; color: #16243A">{{run.dataroom}}</td>
+              <td style="padding: 12px 16px; border-bottom: 1px solid #EBEFF5; color: #44586F">{{run.step}}</td>
+              <td style="padding: 12px 16px; border-bottom: 1px solid #EBEFF5"><span style="{{run.statusStyle}}">{{run.status}}</span></td>
+              <td style="padding: 12px 16px; border-bottom: 1px solid #EBEFF5; color: #44586F; font-variant-numeric: tabular-nums; text-align: right">{{run.pages}}</td>
+              <td style="padding: 12px 16px; border-bottom: 1px solid #EBEFF5; color: #44586F; font-variant-numeric: tabular-nums; text-align: right">{{run.time}}</td>
+              <td style="padding: 12px 16px; border-bottom: 1px solid #EBEFF5; color: #44586F; font-variant-numeric: tabular-nums; text-align: right">{{run.cost}}</td>
+              <td style="padding: 12px 16px; border-bottom: 1px solid #EBEFF5; color: #44586F">{{run.who}}</td>
+            </tr>
+          </sc-for>
+        </tbody>
+      </table>
+    </div>
+
+    <div style="margin-top: 18px; border: 1px solid #DCE3EC; border-radius: 4px; padding: 16px 20px; background: #F8FAFC">
+      <h2 style="margin: 0 0 6px; font-size: 13px; font-weight: 600">Output check</h2>
+      <p style="margin: 0; font-size: 12px; line-height: 1.6; color: #44586F; max-width: 900px">
+        Passed means the report matched the agreed shape: every figure traceable to a document and page, every metric one that was asked for, every currency one that was accepted, and every unread file carrying a reason. A failed check names what was wrong and the run opens on that line.
+      </p>
+    </div>
+
+  </div>
+</div>
+</x-dc>
+
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":820}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const head = 'padding: 10px 16px; font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: #5A6E86; border-bottom: 1px solid #DCE3EC';
+    const headRight = head + '; text-align: right';
+    const pill = (bg, fg) => 'display: inline-block; padding: 3px 9px; border-radius: 3px; font-size: 12px; font-weight: 500; white-space: nowrap; background: ' + bg + '; color: ' + fg;
+    return {
+      columns: [
+        { label: 'Started', style: head },
+        { label: 'Data room', style: head },
+        { label: 'Step', style: head },
+        { label: 'Result', style: head },
+        { label: 'Pages', style: headRight },
+        { label: 'Time', style: headRight },
+        { label: 'Cost', style: headRight },
+        { label: 'Run by', style: head }
+      ],
+      totals: [
+        { value: '5', label: 'Runs this month' },
+        { value: '62', label: 'Pages read' },
+        { value: '$0.006', label: 'Model cost' },
+        { value: '1', label: 'Run that failed' }
+      ],
+      runs: [
+        { started: '23 Sep, 11:22', dataroom: 'Project Harbour', step: 'Extract figures', status: 'Passed checks', statusStyle: pill('#EBEFF5', '#1F3A5F'), pages: '5', time: '22s', cost: '$0.0009', who: 'A. Molajo' },
+        { started: '23 Sep, 11:21', dataroom: 'Project Harbour', step: 'Find statements', status: 'Passed checks', statusStyle: pill('#EBEFF5', '#1F3A5F'), pages: '11', time: '24s', cost: '$0.0009', who: 'A. Molajo' },
+        { started: '22 Sep, 16:04', dataroom: 'Project Kestrel', step: 'Extract figures', status: '1 page not read', statusStyle: pill('#F6EFDD', '#5C4710'), pages: '8', time: '58s', cost: '$0.0014', who: 'A. Molajo' },
+        { started: '22 Sep, 15:28', dataroom: 'Project Kestrel', step: 'Find statements', status: 'Passed checks', statusStyle: pill('#EBEFF5', '#1F3A5F'), pages: '22', time: '80s', cost: '$0.0016', who: 'A. Molajo' },
+        { started: '22 Sep, 09:12', dataroom: 'Project Kestrel', step: 'Find statements', status: 'Stopped: key rejected', statusStyle: pill('#F4EAEA', '#7A2E2E'), pages: '0', time: '2s', cost: '$0.0000', who: 'A. Molajo' }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

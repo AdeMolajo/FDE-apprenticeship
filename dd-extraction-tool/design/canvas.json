@@ -1,0 +1,19 @@
+{
+  "v": 3,
+  "createdOnFiles": { "v": 1, "at": "2026-10-26T10:00:00Z" },
+  "title": "DD Extraction Tool UI",
+  "launch": { "view": "focused", "file": "Main.dc.html" },
+  "pages": [],
+  "boards": {
+    "Main.dc.html": { "x": 0, "y": 0, "w": 1440, "h": 1020, "title": "Run results", "expand": "fill", "is_interactive": true },
+    "NewRun.dc.html": { "x": 1520, "y": 0, "w": 1440, "h": 900, "title": "Start a run", "expand": "fill", "is_interactive": true },
+    "Verify.dc.html": { "x": 0, "y": 1340, "w": 1440, "h": 960, "title": "Verify a figure", "expand": "fill" },
+    "Runs.dc.html": { "x": 1520, "y": 1340, "w": 1440, "h": 820, "title": "Run history", "expand": "fill" }
+  },
+  "order": ["Main.dc.html", "NewRun.dc.html", "Verify.dc.html", "Runs.dc.html"],
+  "notes": {
+    "row1": { "x": 0, "y": -300, "text": "Reviewing a completed run, and starting a new one", "kind": "title1", "maxW": 2960 },
+    "row2": { "x": 0, "y": 1040, "text": "Checking a figure against its source page, and the run history", "kind": "title1", "maxW": 2960 }
+  },
+  "designSystems": []
+}
